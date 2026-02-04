@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>溫度監控 - IFDCS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@24,100,0,0" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'primary': ['JetBrains Mono', 'monospace'],
+            'secondary': ['Geist', 'sans-serif'],
+          },
+          colors: {
+            'background': '#F2F3F0',
+            'foreground': '#111111',
+            'card': '#FFFFFF',
+            'card-foreground': '#111111',
+            'border': '#CBCCC9',
+            'muted': '#F2F3F0',
+            'muted-foreground': '#666666',
+            'primary': '#FF8400',
+            'primary-foreground': '#111111',
+            'secondary': '#E7E8E5',
+            'secondary-foreground': '#111111',
+            'sidebar': '#E7E8E5',
+            'sidebar-accent': '#CBCCC9',
+            'sidebar-foreground': '#666666',
+            'sidebar-primary': '#18181b',
+            'error': '#E5DCDA',
+            'error-foreground': '#8C1C00',
+            'warning': '#E9E3D8',
+            'warning-foreground': '#804200',
+            'success': '#DFE6E1',
+            'success-foreground': '#004D1A',
+            'info': '#DFDFE6',
+            'info-foreground': '#000066',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .material-symbols-sharp {
+      font-family: 'Material Symbols Sharp';
+      font-weight: 100;
+      font-style: normal;
+      font-size: 24px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-smoothing: antialiased;
+    }
+    .icon-20 { font-size: 20px; }
+    .icon-14 { font-size: 14px; }
+
+    /* Dropdown styles */
+    .dropdown { position: relative; }
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      margin-top: 4px;
+      background: white;
+      border: 1px solid #CBCCC9;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      display: none;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .dropdown-menu.open { display: block; }
+    .dropdown-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.15s;
+    }
+    .dropdown-item:hover { background-color: #F2F3F0; }
+    .dropdown-item.selected { background-color: #FF840020; color: #FF8400; }
+
+    /* Device card hover */
+    .device-card {
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .device-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+  </style>
+</head>
+<body class="h-full bg-background font-secondary">
+  <div class="flex h-full w-full">
+    <!-- Sidebar -->
+    <aside class="flex flex-col w-[280px] h-full bg-sidebar border-r border-border">
+      <div class="flex items-center gap-2 h-[88px] px-8 py-6 border-b border-border">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <path d="M16 0L32 16L16 32L0 16L16 0Z" fill="#FF8400"/>
+        </svg>
+        <span class="font-primary text-lg font-bold text-primary leading-none">IFDCS</span>
+      </div>
+      <nav class="flex-1 flex flex-col gap-6 px-4 py-6">
+        <span class="px-4 text-sm text-muted-foreground font-primary">主選單</span>
+        <div class="flex flex-col">
+          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
+            <span class="material-symbols-sharp">dashboard</span>
+            <span class="text-base">戰情中心</span>
+          </a>
+          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
+            <span class="material-symbols-sharp">eco</span>
+            <span class="text-base">碳盤查</span>
+          </a>
+          <a href="energy-monitor.html" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
+            <span class="material-symbols-sharp">bolt</span>
+            <span class="text-base">電力監控</span>
+          </a>
+          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
+            <span class="material-symbols-sharp">precision_manufacturing</span>
+            <span class="text-base">生產數據</span>
+          </a>
+          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full bg-sidebar-accent text-sidebar-primary">
+            <span class="material-symbols-sharp">device_thermostat</span>
+            <span class="text-base">溫度監控</span>
+          </a>
+          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
+            <span class="material-symbols-sharp">notifications</span>
+            <span class="text-base">異常通知</span>
+          </a>
+          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
+            <span class="material-symbols-sharp">settings</span>
+            <span class="text-base">系統設定</span>
+          </a>
+        </div>
+      </nav>
+      <div class="flex items-center gap-2 px-8 py-6">
+        <div class="flex-1 flex flex-col gap-1">
+          <span class="text-base text-sidebar-primary">系統管理員</span>
+          <span class="text-base text-muted-foreground">admin@factory.com</span>
+        </div>
+        <span class="material-symbols-sharp text-muted-foreground">keyboard_arrow_down</span>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full">
+      <!-- Top Bar -->
+      <header class="flex items-center justify-between h-16 px-8 bg-card border-b border-border">
+        <nav class="flex items-center gap-2">
+          <a href="#" class="text-sm text-muted-foreground hover:text-foreground transition-colors">總部</a>
+          <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
+          <a href="#" class="text-sm text-muted-foreground hover:text-foreground transition-colors">台中廠區</a>
+          <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
+          <span class="text-sm text-foreground">溫度監控</span>
+        </nav>
+        <div class="flex items-center gap-4">
+          <button class="flex items-center gap-1.5 h-10 px-4 rounded-full">
+            <span class="font-primary text-sm font-medium text-foreground">中文</span>
+          </button>
+          <div class="flex items-center justify-center w-10 h-10 rounded-full bg-secondary">
+            <span class="font-primary text-sm font-semibold text-foreground">管</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <div class="flex-1 flex flex-col gap-6 p-8 overflow-auto">
+        <!-- Page Header -->
+        <div class="flex items-center justify-between">
+          <div class="flex flex-col gap-2">
+            <h1 class="font-primary text-[32px] font-semibold text-foreground">溫度監控</h1>
+            <p class="text-sm text-muted-foreground">監控所有裝置的即時溫度狀態</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button id="refresh-btn" class="flex items-center gap-2 px-[18px] py-2.5 text-muted-foreground hover:bg-muted rounded transition-colors">
+              <span class="material-symbols-sharp icon-20">refresh</span>
+              <span class="text-sm">刷新</span>
+            </button>
+            <a href="temperature_calibration.html" class="flex items-center gap-2 px-[18px] py-2.5 bg-primary rounded-full hover:opacity-90 transition-opacity">
+              <span class="material-symbols-sharp icon-20 text-foreground">tune</span>
+              <span class="text-sm font-semibold text-foreground">校正設定</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="flex items-center gap-4 p-5 px-6 bg-card border border-border rounded">
+          <span class="text-[13px] font-medium text-muted-foreground">篩選條件</span>
+
+          <!-- Production Line Filter -->
+          <div class="flex flex-col gap-2 w-[200px]">
+            <label class="text-[13px] font-medium text-foreground">所屬產線</label>
+            <div class="dropdown" id="line-dropdown">
+              <button class="flex items-center justify-between w-full h-11 px-4 bg-muted border border-border rounded" onclick="toggleDropdown('line-dropdown')">
+                <span id="line-selected">全部產線</span>
+                <span class="material-symbols-sharp icon-20 text-muted-foreground">keyboard_arrow_down</span>
+              </button>
+              <div class="dropdown-menu" id="line-menu">
+                <div class="dropdown-item selected" data-value="all" onclick="selectLine(this)">全部產線</div>
+                <div class="dropdown-item" data-value="line1" onclick="selectLine(this)">產線 1</div>
+                <div class="dropdown-item" data-value="line2" onclick="selectLine(this)">產線 2</div>
+                <div class="dropdown-item" data-value="line3" onclick="selectLine(this)">產線 3</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status Filter -->
+          <div class="flex flex-col gap-2 w-[200px]">
+            <label class="text-[13px] font-medium text-foreground">狀態篩選</label>
+            <div class="dropdown" id="status-dropdown">
+              <button class="flex items-center justify-between w-full h-11 px-4 bg-muted border border-border rounded" onclick="toggleDropdown('status-dropdown')">
+                <span id="status-selected">全部狀態</span>
+                <span class="material-symbols-sharp icon-20 text-muted-foreground">keyboard_arrow_down</span>
+              </button>
+              <div class="dropdown-menu" id="status-menu">
+                <div class="dropdown-item selected" data-value="all" onclick="selectStatus(this)">全部狀態</div>
+                <div class="dropdown-item" data-value="normal" onclick="selectStatus(this)">正常</div>
+                <div class="dropdown-item" data-value="warning" onclick="selectStatus(this)">警告</div>
+                <div class="dropdown-item" data-value="error" onclick="selectStatus(this)">異常</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Search -->
+          <div class="flex flex-col gap-2 flex-1">
+            <label class="text-[13px] font-medium text-foreground">搜尋裝置</label>
+            <div class="flex items-center h-11 px-4 bg-muted border border-border rounded">
+              <span class="material-symbols-sharp icon-20 text-muted-foreground">search</span>
+              <input type="text" id="search-input" placeholder="輸入裝置名稱..." class="flex-1 ml-2 bg-transparent text-sm text-foreground placeholder-muted-foreground focus:outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- Statistics Section -->
+        <div class="grid grid-cols-4 gap-4">
+          <!-- Total Devices -->
+          <div class="flex flex-col gap-3 p-6 bg-card border border-border rounded shadow-sm">
+            <div class="flex items-center justify-center w-10 h-10 bg-secondary rounded">
+              <span class="material-symbols-sharp text-foreground">devices</span>
+            </div>
+            <span class="text-[13px] text-muted-foreground">監控裝置數</span>
+            <span id="stat-total" class="font-primary text-[32px] font-semibold text-foreground">9</span>
+          </div>
+
+          <!-- Average Temp Card -->
+          <div class="flex flex-col gap-3 p-6 bg-card border border-border rounded shadow-sm">
+            <div class="flex items-center justify-center w-10 h-10 bg-info rounded">
+              <span class="material-symbols-sharp text-info-foreground">thermostat</span>
+            </div>
+            <span class="text-[13px] text-muted-foreground">平均溫度</span>
+            <span id="stat-avg" class="font-primary text-[32px] font-semibold text-foreground">25.8°C</span>
+          </div>
+
+          <!-- Max Temp Card -->
+          <div class="flex flex-col gap-3 p-6 bg-card border border-border rounded shadow-sm">
+            <div class="flex items-center justify-center w-10 h-10 bg-error rounded">
+              <span class="material-symbols-sharp text-error-foreground">device_thermostat</span>
+            </div>
+            <span class="text-[13px] text-muted-foreground">最高溫度</span>
+            <span id="stat-max" class="font-primary text-[32px] font-semibold text-error-foreground">31.2°C</span>
+          </div>
+
+          <!-- Min Temp Card -->
+          <div class="flex flex-col gap-3 p-6 bg-card border border-border rounded shadow-sm">
+            <div class="flex items-center justify-center w-10 h-10 bg-info rounded">
+              <span class="material-symbols-sharp text-info-foreground">ac_unit</span>
+            </div>
+            <span class="text-[13px] text-muted-foreground">最低溫度</span>
+            <span id="stat-min" class="font-primary text-[32px] font-semibold text-info-foreground">21.8°C</span>
+          </div>
+        </div>
+
+        <!-- Devices Header -->
+        <div class="flex items-center justify-between">
+          <h2 class="font-primary text-lg font-semibold text-foreground">裝置溫度列表</h2>
+          <span id="device-count" class="text-[13px] text-muted-foreground">共 9 個裝置</span>
+        </div>
+
+        <!-- Device Cards Container -->
+        <div id="device-grid" class="grid grid-cols-3 gap-4">
+          <!-- Device cards will be rendered here dynamically -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="hidden flex flex-col items-center justify-center py-16 text-center">
+          <span class="material-symbols-sharp text-muted-foreground" style="font-size: 64px;">search_off</span>
+          <p class="mt-4 text-lg text-muted-foreground">沒有符合條件的裝置</p>
+          <p class="mt-2 text-sm text-muted-foreground">請嘗試調整篩選條件</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // ============ DATA ============
+    const productionLines = {
+      line1: { name: '產線 1' },
+      line2: { name: '產線 2' },
+      line3: { name: '產線 3' }
+    };
+
+    const devices = [
+      { id: 'A1', name: '裝置 A1', line: 'line1', baseTemp: 24.5, range: [20, 30], currentTemp: 24.5 },
+      { id: 'A2', name: '裝置 A2', line: 'line1', baseTemp: 26.8, range: [20, 30], currentTemp: 26.8 },
+      { id: 'A3', name: '裝置 A3', line: 'line1', baseTemp: 25.2, range: [20, 30], currentTemp: 25.2 },
+      { id: 'B1', name: '裝置 B1', line: 'line2', baseTemp: 28.5, range: [22, 35], currentTemp: 28.5 },
+      { id: 'B2', name: '裝置 B2', line: 'line2', baseTemp: 31.2, range: [22, 35], currentTemp: 31.2 },
+      { id: 'C1', name: '裝置 C1', line: 'line3', baseTemp: 22.0, range: [18, 28], currentTemp: 22.0 },
+      { id: 'C2', name: '裝置 C2', line: 'line3', baseTemp: 23.5, range: [18, 28], currentTemp: 23.5 },
+      { id: 'C3', name: '裝置 C3', line: 'line3', baseTemp: 21.8, range: [18, 28], currentTemp: 21.8 },
+      { id: 'C4', name: '裝置 C4', line: 'line3', baseTemp: 27.2, range: [18, 28], currentTemp: 27.2 },
+    ];
+
+    // ============ STATE ============
+    let currentLineFilter = 'all';
+    let currentStatusFilter = 'all';
+    let searchQuery = '';
+    let updateInterval = null;
+
+    // ============ HELPER FUNCTIONS ============
+    function getDeviceStatus(device) {
+      const temp = device.currentTemp;
+      const [min, max] = device.range;
+      if (temp >= min && temp <= max) return 'normal';
+      if (temp > max && temp <= max + 5) return 'warning';
+      return 'error';
+    }
+
+    function getStatusDisplay(status) {
+      switch (status) {
+        case 'normal': return { text: '正常', color: 'success-foreground', bg: 'bg-success-foreground' };
+        case 'warning': return { text: '警告', color: 'warning-foreground', bg: 'bg-warning-foreground' };
+        case 'error': return { text: '異常', color: 'error-foreground', bg: 'bg-error-foreground' };
+      }
+    }
+
+    function getLastUpdateText() {
+      const options = ['剛剛', '1分鐘前', '2分鐘前', '3分鐘前'];
+      return options[Math.floor(Math.random() * options.length)];
+    }
+
+    // ============ DROPDOWN FUNCTIONS ============
+    function toggleDropdown(id) {
+      const menu = document.getElementById(id).querySelector('.dropdown-menu');
+      document.querySelectorAll('.dropdown-menu').forEach(m => {
+        if (m !== menu) m.classList.remove('open');
+      });
+      menu.classList.toggle('open');
+    }
+
+    function selectLine(el) {
+      const value = el.dataset.value;
+      currentLineFilter = value;
+      document.getElementById('line-selected').textContent = value === 'all' ? '全部產線' : productionLines[value].name;
+
+      document.querySelectorAll('#line-menu .dropdown-item').forEach(item => item.classList.remove('selected'));
+      el.classList.add('selected');
+
+      toggleDropdown('line-dropdown');
+      renderDevices();
+    }
+
+    function selectStatus(el) {
+      const value = el.dataset.value;
+      currentStatusFilter = value;
+      const statusNames = { all: '全部狀態', normal: '正常', warning: '警告', error: '異常' };
+      document.getElementById('status-selected').textContent = statusNames[value];
+
+      document.querySelectorAll('#status-menu .dropdown-item').forEach(item => item.classList.remove('selected'));
+      el.classList.add('selected');
+
+      toggleDropdown('status-dropdown');
+      renderDevices();
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.dropdown')) {
+        document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('open'));
+      }
+    });
+
+    // ============ SEARCH ============
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      searchQuery = e.target.value.toLowerCase();
+      renderDevices();
+    });
+
+    // ============ RENDER FUNCTIONS ============
+    function getFilteredDevices() {
+      return devices.filter(device => {
+        // Line filter
+        if (currentLineFilter !== 'all' && device.line !== currentLineFilter) return false;
+
+        // Status filter
+        const status = getDeviceStatus(device);
+        if (currentStatusFilter !== 'all' && status !== currentStatusFilter) return false;
+
+        // Search filter
+        if (searchQuery && !device.name.toLowerCase().includes(searchQuery) && !device.id.toLowerCase().includes(searchQuery)) {
+          return false;
+        }
+
+        return true;
+      });
+    }
+
+    function renderDevices() {
+      const filtered = getFilteredDevices();
+      const grid = document.getElementById('device-grid');
+      const emptyState = document.getElementById('empty-state');
+
+      if (filtered.length === 0) {
+        grid.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+      } else {
+        grid.classList.remove('hidden');
+        emptyState.classList.add('hidden');
+      }
+
+      grid.innerHTML = filtered.map(device => {
+        const status = getDeviceStatus(device);
+        const statusDisplay = getStatusDisplay(status);
+        const [min, max] = device.range;
+
+        return `
+          <div class="device-card flex flex-col gap-4 p-6 bg-card border border-border rounded shadow-sm animate-fade-in"
+               onclick="navigateToDevice('${device.line}', '${device.id}')">
+            <div class="flex items-center justify-between">
+              <div class="flex flex-col">
+                <span class="font-primary text-base font-semibold text-foreground">${device.name}</span>
+                <span class="text-xs text-muted-foreground">${productionLines[device.line].name}</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <div class="w-2 h-2 rounded-full ${statusDisplay.bg}"></div>
+                <span class="text-xs font-medium text-${statusDisplay.color}">${statusDisplay.text}</span>
+              </div>
+            </div>
+            <span class="font-primary text-5xl font-semibold text-foreground device-temp" data-id="${device.id}">${device.currentTemp.toFixed(1)}°C</span>
+            <div class="flex gap-4">
+              <div class="flex-1 flex flex-col gap-1">
+                <span class="text-xs text-muted-foreground">正常範圍</span>
+                <span class="text-sm font-medium text-foreground">${min}-${max}°C</span>
+              </div>
+              <div class="flex-1 flex flex-col gap-1">
+                <span class="text-xs text-muted-foreground">最後更新</span>
+                <span class="text-sm font-medium text-foreground">${getLastUpdateText()}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Update device count
+      document.getElementById('device-count').textContent = `共 ${filtered.length} 個裝置`;
+
+      // Update statistics
+      updateStatistics(filtered);
+    }
+
+    function updateStatistics(filteredDevices) {
+      const temps = filteredDevices.map(d => d.currentTemp);
+
+      if (temps.length === 0) {
+        document.getElementById('stat-total').textContent = '0';
+        document.getElementById('stat-avg').textContent = '--';
+        document.getElementById('stat-max').textContent = '--';
+        document.getElementById('stat-min').textContent = '--';
+        return;
+      }
+
+      const avg = temps.reduce((a, b) => a + b, 0) / temps.length;
+      const max = Math.max(...temps);
+      const min = Math.min(...temps);
+
+      document.getElementById('stat-total').textContent = filteredDevices.length;
+      document.getElementById('stat-avg').textContent = avg.toFixed(1) + '°C';
+      document.getElementById('stat-max').textContent = max.toFixed(1) + '°C';
+      document.getElementById('stat-min').textContent = min.toFixed(1) + '°C';
+    }
+
+    // ============ NAVIGATION ============
+    function navigateToDevice(lineId, deviceId) {
+      // Store selection in sessionStorage so single page can use it
+      sessionStorage.setItem('selectedLine', lineId);
+      sessionStorage.setItem('selectedDevice', deviceId);
+      window.location.href = 'temperature_monitor_single.html';
+    }
+
+    // ============ REAL-TIME UPDATES ============
+    function updateTemperatures() {
+      devices.forEach(device => {
+        const variation = (Math.random() - 0.5) * 2;
+        device.currentTemp = device.baseTemp + variation;
+      });
+
+      // Update DOM directly for visible devices
+      devices.forEach(device => {
+        const tempEl = document.querySelector(`.device-temp[data-id="${device.id}"]`);
+        if (tempEl) {
+          tempEl.textContent = device.currentTemp.toFixed(1) + '°C';
+
+          // Update status indicator
+          const card = tempEl.closest('.device-card');
+          if (card) {
+            const status = getDeviceStatus(device);
+            const statusDisplay = getStatusDisplay(status);
+            const statusDot = card.querySelector('.rounded-full');
+            const statusText = card.querySelector('.text-xs.font-medium');
+
+            if (statusDot) {
+              statusDot.className = `w-2 h-2 rounded-full ${statusDisplay.bg}`;
+            }
+            if (statusText) {
+              statusText.className = `text-xs font-medium text-${statusDisplay.color}`;
+              statusText.textContent = statusDisplay.text;
+            }
+          }
+        }
+      });
+
+      // Update statistics
+      const filtered = getFilteredDevices();
+      updateStatistics(filtered);
+    }
+
+    function startRealtimeUpdates() {
+      if (updateInterval) clearInterval(updateInterval);
+      updateInterval = setInterval(updateTemperatures, 3000);
+    }
+
+    // ============ REFRESH BUTTON ============
+    document.getElementById('refresh-btn').addEventListener('click', () => {
+      updateTemperatures();
+      renderDevices();
+
+      // Add spinning animation to refresh icon
+      const icon = document.querySelector('#refresh-btn .material-symbols-sharp');
+      icon.style.transition = 'transform 0.5s';
+      icon.style.transform = 'rotate(360deg)';
+      setTimeout(() => {
+        icon.style.transition = '';
+        icon.style.transform = '';
+      }, 500);
+    });
+
+    // ============ INIT ============
+    function init() {
+      // Initialize temperatures with some variation
+      devices.forEach(device => {
+        device.currentTemp = device.baseTemp + (Math.random() - 0.5) * 3;
+      });
+
+      renderDevices();
+      startRealtimeUpdates();
+    }
+
+    init();
+  </script>
+</body>
+</html>

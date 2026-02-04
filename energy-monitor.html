@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>電力監控 - IFDCS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@24,100,0,0" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'primary': ['JetBrains Mono', 'monospace'],
+            'secondary': ['Geist', 'sans-serif'],
+          },
+          colors: {
+            'background': '#F2F3F0',
+            'foreground': '#111111',
+            'card': '#FFFFFF',
+            'card-foreground': '#111111',
+            'border': '#CBCCC9',
+            'muted': '#F2F3F0',
+            'muted-foreground': '#666666',
+            'primary': '#FF8400',
+            'primary-foreground': '#111111',
+            'secondary': '#E7E8E5',
+            'secondary-foreground': '#111111',
+            'sidebar': '#E7E8E5',
+            'sidebar-accent': '#CBCCC9',
+            'sidebar-foreground': '#666666',
+            'sidebar-primary': '#18181b',
+            'error': '#E5DCDA',
+            'error-foreground': '#8C1C00',
+            'warning': '#E9E3D8',
+            'warning-foreground': '#804200',
+            'success-foreground': '#004D1A',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .material-symbols-sharp {
+      font-family: 'Material Symbols Sharp';
+      font-weight: 100;
+      font-style: normal;
+      font-size: 24px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-smoothing: antialiased;
+    }
+  </style>
+</head>
+<body class="h-full bg-background font-secondary">
+  <div class="flex h-full w-full">
+    <!-- Sidebar -->
+    <aside class="flex flex-col w-[280px] h-full bg-sidebar border-r border-border">
+      <!-- Sidebar Header -->
+      <div class="flex items-center gap-2 h-[88px] px-8 py-6 border-b border-border">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <path d="M16 0L32 16L16 32L0 16L16 0Z" fill="#FF8400"/>
+        </svg>
+        <span class="font-primary text-lg font-bold text-primary leading-none">IFDCS</span>
+      </div>
+
+      <!-- Sidebar Content -->
+      <nav class="flex-1 flex flex-col gap-6 px-4 py-6">
+        <span class="px-4 text-sm text-muted-foreground font-primary">主選單</span>
+
+        <div class="flex flex-col">
+          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
+            <span class="material-symbols-sharp">dashboard</span>
+            <span class="text-base">戰情中心</span>
+          </a>
+          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
+            <span class="material-symbols-sharp">eco</span>
+            <span class="text-base">碳盤查</span>
+          </a>
+          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full bg-sidebar-accent text-sidebar-primary">
+            <span class="material-symbols-sharp">bolt</span>
+            <span class="text-base">電力監控</span>
+          </a>
+          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
+            <span class="material-symbols-sharp">precision_manufacturing</span>
+            <span class="text-base">生產數據</span>
+          </a>
+          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
+            <span class="material-symbols-sharp">notifications</span>
+            <span class="text-base">異常通知</span>
+          </a>
+          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
+            <span class="material-symbols-sharp">settings</span>
+            <span class="text-base">系統設定</span>
+          </a>
+        </div>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="flex items-center gap-2 px-8 py-6">
+        <div class="flex-1 flex flex-col gap-1">
+          <span class="text-base text-sidebar-primary">系統管理員</span>
+          <span class="text-base text-muted-foreground">admin@factory.com</span>
+        </div>
+        <span class="material-symbols-sharp text-muted-foreground">keyboard_arrow_down</span>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full">
+      <!-- Top Bar -->
+      <header class="flex items-center justify-between h-16 px-8 bg-card border-b border-border">
+        <nav class="flex items-center gap-4">
+          <span class="text-sm text-muted-foreground">台中廠區</span>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M5.25 3.5L8.75 7L5.25 10.5" stroke="#666666" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="text-sm text-foreground">電力監控</span>
+        </nav>
+        <div class="flex items-center gap-4">
+          <button class="flex items-center gap-1.5 h-10 px-4 rounded-full">
+            <span class="font-primary text-sm font-medium text-foreground">中文</span>
+          </button>
+          <div class="flex items-center justify-center w-10 h-10 rounded-full bg-secondary">
+            <span class="font-primary text-sm font-semibold text-foreground">管</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <div class="flex-1 flex flex-col gap-6 p-8 overflow-auto">
+        <!-- Page Header -->
+        <div class="flex items-center justify-between">
+          <div class="flex flex-col gap-1">
+            <h1 class="font-primary text-[28px] font-semibold text-foreground leading-tight">電力監控</h1>
+            <p class="text-sm text-muted-foreground leading-snug">即時功率監控與用電分析</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="flex flex-col gap-1.5 w-40">
+              <div class="flex items-center justify-between h-10 px-4 rounded-full bg-muted border border-border">
+                <span class="text-sm text-muted-foreground">今日</span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="opacity-50">
+                  <path d="M4 6L8 10L12 6" stroke="#111111" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metrics Row -->
+        <div class="flex gap-4">
+          <!-- Card 1: 即時總功率 -->
+          <div class="flex-1 flex flex-col bg-card rounded border border-border shadow-sm">
+            <div class="flex flex-col gap-2 p-6">
+              <span class="font-primary text-sm text-muted-foreground leading-snug">即時總功率</span>
+              <div class="flex items-end gap-2">
+                <span class="font-primary text-[32px] font-semibold text-foreground leading-tight">1,250</span>
+                <span class="text-sm text-muted-foreground leading-snug">kW</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: 今日累計用電 -->
+          <div class="flex-1 flex flex-col bg-card rounded border border-border shadow-sm">
+            <div class="flex flex-col gap-2 p-6">
+              <span class="font-primary text-sm text-muted-foreground leading-snug">今日累計用電</span>
+              <div class="flex items-end gap-2">
+                <span class="font-primary text-[32px] font-semibold text-foreground leading-tight">18,720</span>
+                <span class="text-sm text-muted-foreground leading-snug">kWh</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: 本月電費預估 -->
+          <div class="flex-1 flex flex-col bg-card rounded border border-border shadow-sm">
+            <div class="flex flex-col gap-2 p-6">
+              <span class="font-primary text-sm text-muted-foreground leading-snug">本月電費預估</span>
+              <div class="flex items-end gap-2">
+                <span class="font-primary text-[28px] font-semibold text-foreground leading-tight">NT$ 285,000</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 4: 單件產品耗電 -->
+          <div class="flex-1 flex flex-col bg-card rounded border border-border shadow-sm">
+            <div class="flex flex-col gap-2 p-6">
+              <span class="font-primary text-sm text-muted-foreground leading-snug">單件產品耗電</span>
+              <div class="flex items-end gap-2">
+                <span class="font-primary text-[32px] font-semibold text-success-foreground leading-tight">2.8</span>
+                <span class="text-sm text-muted-foreground leading-snug">kWh/件</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="flex-1 flex gap-4 min-h-0">
+          <!-- Power Chart Card -->
+          <div class="flex-1 flex flex-col bg-card rounded border border-border shadow-sm overflow-hidden">
+            <div class="flex items-center justify-between p-6 border-b border-border">
+              <span class="font-primary text-base font-medium text-foreground leading-normal">24 小時功率曲線</span>
+              <div class="flex items-center gap-4">
+                <div class="flex items-center gap-1.5">
+                  <div class="w-3 h-3 rounded-md bg-primary"></div>
+                  <span class="text-xs text-muted-foreground">實際功率</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-3 h-3 rounded-md bg-secondary"></div>
+                  <span class="text-xs text-muted-foreground">預測功率</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex-1 flex flex-col gap-4 p-6">
+              <div class="flex-1 flex items-end justify-between gap-1">
+                <div class="w-4 rounded-t-sm bg-primary" style="height: 40%"></div>
+                <div class="w-4 rounded-t-sm bg-primary" style="height: 30%"></div>
+                <div class="w-4 rounded-t-sm bg-primary" style="height: 22.5%"></div>
+                <div class="w-4 rounded-t-sm bg-primary" style="height: 25%"></div>
+                <div class="w-4 rounded-t-sm bg-primary" style="height: 45%"></div>
+                <div class="w-4 rounded-t-sm bg-primary" style="height: 70%"></div>
+                <div class="w-4 rounded-t-sm bg-primary" style="height: 90%"></div>
+                <div class="w-4 rounded-t-sm bg-primary" style="height: 100%"></div>
+                <div class="w-4 rounded-t-sm bg-primary" style="height: 95%"></div>
+                <div class="w-4 rounded-t-sm bg-primary" style="height: 92.5%"></div>
+                <div class="w-4 rounded-t-sm bg-primary" style="height: 97.5%"></div>
+                <div class="w-4 rounded-t-sm bg-primary" style="height: 100%"></div>
+                <div class="w-4 rounded-t-sm bg-secondary" style="height: 90%"></div>
+                <div class="w-4 rounded-t-sm bg-secondary" style="height: 80%"></div>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-[10px] text-muted-foreground">00</span>
+                <span class="text-[10px] text-muted-foreground">04</span>
+                <span class="text-[10px] text-muted-foreground">08</span>
+                <span class="text-[10px] text-muted-foreground">12</span>
+                <span class="text-[10px] text-muted-foreground">16</span>
+                <span class="text-[10px] text-muted-foreground">20</span>
+                <span class="text-[10px] text-muted-foreground">24</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Device List Card -->
+          <div class="flex flex-col w-[400px] bg-card rounded border border-border shadow-sm overflow-hidden">
+            <div class="flex items-center justify-between p-6 border-b border-border">
+              <span class="font-primary text-base font-medium text-foreground leading-normal">設備用電排行</span>
+              <span class="px-3 py-1 rounded-full bg-error text-xs font-medium text-error-foreground">電老虎</span>
+            </div>
+            <div class="flex-1 flex flex-col gap-2 p-4 overflow-auto">
+              <!-- Device 1 -->
+              <div class="flex items-center gap-3 p-3 rounded-lg bg-error">
+                <span class="font-primary text-base font-semibold text-error-foreground">1</span>
+                <div class="flex-1 flex flex-col gap-0.5">
+                  <span class="text-sm font-medium text-error-foreground">CNC-05 加工中心</span>
+                  <span class="text-xs text-error-foreground opacity-80">負載率: 95%</span>
+                </div>
+                <span class="font-primary text-sm font-semibold text-error-foreground">320 kW</span>
+              </div>
+
+              <!-- Device 2 -->
+              <div class="flex items-center gap-3 p-3 rounded-lg bg-warning">
+                <span class="font-primary text-base font-semibold text-warning-foreground">2</span>
+                <div class="flex-1 flex flex-col gap-0.5">
+                  <span class="text-sm font-medium text-warning-foreground">空壓機組 A</span>
+                  <span class="text-xs text-warning-foreground opacity-80">負載率: 88%</span>
+                </div>
+                <span class="font-primary text-sm font-semibold text-warning-foreground">280 kW</span>
+              </div>
+
+              <!-- Device 3 -->
+              <div class="flex items-center gap-3 p-3 rounded-lg bg-secondary">
+                <span class="font-primary text-base font-semibold text-foreground">3</span>
+                <div class="flex-1 flex flex-col gap-0.5">
+                  <span class="text-sm font-medium text-foreground">射出機 B-02</span>
+                  <span class="text-xs text-muted-foreground">負載率: 75%</span>
+                </div>
+                <span class="font-primary text-sm font-semibold text-foreground">185 kW</span>
+              </div>
+
+              <!-- Device 4 -->
+              <div class="flex items-center gap-3 p-3 rounded-lg bg-secondary">
+                <span class="font-primary text-base font-semibold text-foreground">4</span>
+                <div class="flex-1 flex flex-col gap-0.5">
+                  <span class="text-sm font-medium text-foreground">冷卻塔 C-01</span>
+                  <span class="text-xs text-muted-foreground">負載率: 68%</span>
+                </div>
+                <span class="font-primary text-sm font-semibold text-foreground">150 kW</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

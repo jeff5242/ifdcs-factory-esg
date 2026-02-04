@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>溫度校正設定 - IFDCS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@24,100,0,0" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'primary': ['JetBrains Mono', 'monospace'],
+            'secondary': ['Geist', 'sans-serif'],
+          },
+          colors: {
+            'background': '#F2F3F0',
+            'foreground': '#111111',
+            'card': '#FFFFFF',
+            'card-foreground': '#111111',
+            'border': '#CBCCC9',
+            'muted': '#F2F3F0',
+            'muted-foreground': '#666666',
+            'primary': '#FF8400',
+            'primary-foreground': '#111111',
+            'secondary': '#E7E8E5',
+            'secondary-foreground': '#111111',
+            'sidebar': '#E7E8E5',
+            'sidebar-accent': '#CBCCC9',
+            'sidebar-foreground': '#666666',
+            'sidebar-primary': '#18181b',
+            'error': '#E5DCDA',
+            'error-foreground': '#8C1C00',
+            'warning': '#E9E3D8',
+            'warning-foreground': '#804200',
+            'success': '#DFE6E1',
+            'success-foreground': '#004D1A',
+            'info': '#DFDFE6',
+            'info-foreground': '#000066',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .material-symbols-sharp {
+      font-family: 'Material Symbols Sharp';
+      font-weight: 100;
+      font-style: normal;
+      font-size: 24px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-smoothing: antialiased;
+    }
+    .icon-20 { font-size: 20px; }
+    .icon-14 { font-size: 14px; }
+    .icon-16 { font-size: 16px; }
+
+    /* Dropdown styles */
+    .dropdown { position: relative; }
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      margin-top: 4px;
+      background: white;
+      border: 1px solid #CBCCC9;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      display: none;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .dropdown-menu.open { display: block; }
+    .dropdown-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.15s;
+    }
+    .dropdown-item:hover { background-color: #F2F3F0; }
+    .dropdown-item.selected { background-color: #FF840020; color: #FF8400; }
+
+    /* Animation for calculation */
+    @keyframes pulse-success {
+      0%, 100% { background-color: #DFE6E1; }
+      50% { background-color: #BBE0C6; }
+    }
+    .animate-pulse-success { animation: pulse-success 0.6s ease-in-out; }
+
+    @keyframes countUp {
+      from { opacity: 0.3; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-count { animation: countUp 0.3s ease-out; }
+  </style>
+</head>
+<body class="h-full bg-background font-secondary">
+  <div class="flex h-full w-full">
+    <!-- Sidebar -->
+    <aside class="flex flex-col w-[280px] h-full bg-sidebar border-r border-border">
+      <!-- Sidebar Header -->
+      <div class="flex items-center gap-2 h-[88px] px-8 py-6 border-b border-border">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <path d="M16 0L32 16L16 32L0 16L16 0Z" fill="#FF8400"/>
+        </svg>
+        <span class="font-primary text-lg font-bold text-primary leading-none">IFDCS</span>
+      </div>
+
+      <!-- Sidebar Content -->
+      <nav class="flex-1 flex flex-col gap-6 px-4 py-6">
+        <span class="px-4 text-sm text-muted-foreground font-primary">主選單</span>
+
+        <div class="flex flex-col">
+          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
+            <span class="material-symbols-sharp">dashboard</span>
+            <span class="text-base">戰情中心</span>
+          </a>
+          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
+            <span class="material-symbols-sharp">eco</span>
+            <span class="text-base">碳盤查</span>
+          </a>
+          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
+            <span class="material-symbols-sharp">bolt</span>
+            <span class="text-base">電力監控</span>
+          </a>
+          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
+            <span class="material-symbols-sharp">precision_manufacturing</span>
+            <span class="text-base">生產數據</span>
+          </a>
+          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full bg-sidebar-accent text-sidebar-primary">
+            <span class="material-symbols-sharp">device_thermostat</span>
+            <span class="text-base">溫度監控</span>
+          </a>
+          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
+            <span class="material-symbols-sharp">notifications</span>
+            <span class="text-base">異常通知</span>
+          </a>
+          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
+            <span class="material-symbols-sharp">settings</span>
+            <span class="text-base">系統設定</span>
+          </a>
+        </div>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="flex items-center gap-2 px-8 py-6">
+        <div class="flex-1 flex flex-col gap-1">
+          <span class="text-base text-sidebar-primary">系統管理員</span>
+          <span class="text-base text-muted-foreground">admin@factory.com</span>
+        </div>
+        <span class="material-symbols-sharp text-muted-foreground">keyboard_arrow_down</span>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full">
+      <!-- Top Bar with Breadcrumb -->
+      <header class="flex items-center justify-between h-16 px-8 bg-card border-b border-border">
+        <nav class="flex items-center gap-2">
+          <a href="#" class="text-sm text-muted-foreground hover:text-foreground transition-colors">總部</a>
+          <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
+          <a href="#" class="text-sm text-muted-foreground hover:text-foreground transition-colors">台中廠區</a>
+          <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
+          <a href="temperature_monitor.html" class="text-sm text-muted-foreground hover:text-foreground transition-colors">溫度監控</a>
+          <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
+          <span class="text-sm text-foreground">校正設定</span>
+        </nav>
+        <div class="flex items-center gap-4">
+          <button class="flex items-center gap-1.5 h-10 px-4 rounded-full">
+            <span class="font-primary text-sm font-medium text-foreground">中文</span>
+          </button>
+          <div class="flex items-center justify-center w-10 h-10 rounded-full bg-secondary">
+            <span class="font-primary text-sm font-semibold text-foreground">管</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <div class="flex-1 flex flex-col gap-6 p-8 overflow-auto">
+        <!-- Calibration Form Card -->
+        <div class="flex flex-col gap-8 p-8 bg-card border border-border rounded shadow-sm">
+          <!-- Page Header -->
+          <div class="flex flex-col gap-3">
+            <a href="temperature_monitor_single.html" class="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+              <span class="material-symbols-sharp icon-20">arrow_back</span>
+              <span class="text-sm">返回溫度監控</span>
+            </a>
+            <div class="flex flex-col gap-2">
+              <h1 class="font-primary text-[32px] font-semibold text-foreground">溫度校正設定</h1>
+              <p class="text-sm text-muted-foreground">請輸入 5 個測量點的數值及對應的真實溫度，系統將自動計算校正公式</p>
+            </div>
+          </div>
+
+          <!-- Device Selector Section -->
+          <div class="flex gap-4">
+            <!-- Production Line Selector -->
+            <div class="flex flex-col gap-3 flex-1">
+              <label class="font-primary text-base font-semibold text-foreground">選擇產線</label>
+              <div class="dropdown" id="line-dropdown">
+                <button class="flex items-center justify-between w-full h-12 px-4 bg-muted border border-border rounded" onclick="toggleDropdown('line-dropdown')">
+                  <span id="line-selected" class="text-sm text-foreground">產線 1</span>
+                  <span class="material-symbols-sharp icon-20 text-muted-foreground">keyboard_arrow_down</span>
+                </button>
+                <div class="dropdown-menu" id="line-menu">
+                  <div class="dropdown-item selected" data-value="line1" onclick="selectLine(this)">產線 1</div>
+                  <div class="dropdown-item" data-value="line2" onclick="selectLine(this)">產線 2</div>
+                  <div class="dropdown-item" data-value="line3" onclick="selectLine(this)">產線 3</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Device Selector -->
+            <div class="flex flex-col gap-3 flex-1">
+              <label class="font-primary text-base font-semibold text-foreground">選擇溫度裝置</label>
+              <div class="dropdown" id="device-dropdown">
+                <button class="flex items-center justify-between w-full h-12 px-4 bg-muted border border-border rounded" onclick="toggleDropdown('device-dropdown')">
+                  <span id="device-selected" class="text-sm text-foreground">裝置 A1</span>
+                  <span class="material-symbols-sharp icon-20 text-muted-foreground">keyboard_arrow_down</span>
+                </button>
+                <div class="dropdown-menu" id="device-menu">
+                  <!-- Populated dynamically -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Calibration Points Section -->
+          <div class="flex flex-col gap-4">
+            <div class="flex flex-col gap-2">
+              <h2 class="font-primary text-base font-semibold text-foreground">校正點設定</h2>
+              <p class="text-[13px] text-muted-foreground">建議選擇分佈於測量範圍內的 5 個點，以獲得最佳的校正效果</p>
+            </div>
+
+            <!-- Table -->
+            <div class="flex flex-col">
+              <!-- Table Header -->
+              <div class="flex items-center py-3 border-b border-border">
+                <span class="w-20 text-xs font-medium text-muted-foreground">測量點</span>
+                <span class="flex-1 text-xs font-medium text-muted-foreground">測量值 (°C)</span>
+                <span class="flex-1 text-xs font-medium text-muted-foreground">真實值 (°C)</span>
+              </div>
+
+              <!-- Row 1 -->
+              <div class="flex items-center py-3.5 border-b border-border">
+                <span class="w-20 text-sm font-medium text-foreground">點 1</span>
+                <div class="flex-1 pr-4">
+                  <input type="number" step="0.1" value="20.0" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="0" data-type="measured">
+                </div>
+                <div class="flex-1">
+                  <input type="number" step="0.1" value="19.8" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="0" data-type="actual">
+                </div>
+              </div>
+
+              <!-- Row 2 -->
+              <div class="flex items-center py-3.5 border-b border-border">
+                <span class="w-20 text-sm font-medium text-foreground">點 2</span>
+                <div class="flex-1 pr-4">
+                  <input type="number" step="0.1" value="25.0" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="1" data-type="measured">
+                </div>
+                <div class="flex-1">
+                  <input type="number" step="0.1" value="24.7" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="1" data-type="actual">
+                </div>
+              </div>
+
+              <!-- Row 3 -->
+              <div class="flex items-center py-3.5 border-b border-border">
+                <span class="w-20 text-sm font-medium text-foreground">點 3</span>
+                <div class="flex-1 pr-4">
+                  <input type="number" step="0.1" value="30.0" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="2" data-type="measured">
+                </div>
+                <div class="flex-1">
+                  <input type="number" step="0.1" value="29.5" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="2" data-type="actual">
+                </div>
+              </div>
+
+              <!-- Row 4 -->
+              <div class="flex items-center py-3.5 border-b border-border">
+                <span class="w-20 text-sm font-medium text-foreground">點 4</span>
+                <div class="flex-1 pr-4">
+                  <input type="number" step="0.1" value="35.0" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="3" data-type="measured">
+                </div>
+                <div class="flex-1">
+                  <input type="number" step="0.1" value="34.3" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="3" data-type="actual">
+                </div>
+              </div>
+
+              <!-- Row 5 -->
+              <div class="flex items-center py-3.5">
+                <span class="w-20 text-sm font-medium text-foreground">點 5</span>
+                <div class="flex-1 pr-4">
+                  <input type="number" step="0.1" value="40.0" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="4" data-type="measured">
+                </div>
+                <div class="flex-1">
+                  <input type="number" step="0.1" value="39.1" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="4" data-type="actual">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Calibration Result Section (Dynamic) -->
+          <div id="calibration-result" class="flex flex-col gap-4 p-5 bg-success border border-success-foreground/20 rounded">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-sharp icon-20 text-success-foreground">functions</span>
+              <span class="text-sm font-semibold text-success-foreground">校正公式計算結果</span>
+            </div>
+            <div class="flex flex-col gap-3">
+              <!-- Formula Display -->
+              <div class="flex items-center gap-4 flex-wrap">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm text-success-foreground">校正公式:</span>
+                  <span class="font-primary text-lg font-bold text-success-foreground">y = </span>
+                  <span id="slope-value" class="font-primary text-lg font-bold text-success-foreground animate-count">0.9730</span>
+                  <span class="font-primary text-lg font-bold text-success-foreground"> x + </span>
+                  <span id="intercept-value" class="font-primary text-lg font-bold text-success-foreground animate-count">-0.2700</span>
+                </div>
+              </div>
+              <!-- Statistics -->
+              <div class="flex items-center gap-6 text-sm">
+                <div class="flex items-center gap-2">
+                  <span class="text-success-foreground/80">斜率 (a):</span>
+                  <span id="slope-display" class="font-primary font-semibold text-success-foreground">0.9730</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-success-foreground/80">截距 (b):</span>
+                  <span id="intercept-display" class="font-primary font-semibold text-success-foreground">-0.2700</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-success-foreground/80">R² 值:</span>
+                  <span id="r-squared" class="font-primary font-semibold text-success-foreground">0.9998</span>
+                </div>
+              </div>
+              <!-- Meaning explanation -->
+              <p class="text-[13px] text-success-foreground/90 leading-relaxed">
+                校正後溫度 = <span class="font-primary">a</span> × 測量溫度 + <span class="font-primary">b</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex items-center justify-end gap-3 pt-6">
+            <a href="temperature_monitor_single.html" class="flex items-center justify-center px-6 py-3 border border-border rounded-full text-sm font-medium text-foreground hover:bg-muted transition-colors">
+              取消
+            </a>
+            <button id="save-btn" class="flex items-center gap-2 px-6 py-3 bg-primary rounded-full hover:opacity-90 transition-opacity">
+              <span class="material-symbols-sharp icon-20 text-foreground">check</span>
+              <span class="text-sm font-semibold text-foreground">儲存校正參數</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Info Card -->
+        <div class="flex flex-col gap-3 p-5 bg-info border border-border rounded">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-sharp icon-20 text-info-foreground">info</span>
+            <span class="text-sm font-semibold text-info-foreground">校正說明</span>
+          </div>
+          <p class="text-[13px] text-info-foreground leading-relaxed">
+            系統將使用最小二乘法計算校正公式 <span class="font-primary font-semibold">y = ax + b</span>。其中 <span class="font-primary">a</span> 為斜率，<span class="font-primary">b</span> 為截距。輸入的數據點越準確且分佈越均勻，校正效果越好。完成校正後，所有該設備的溫度讀數將自動套用校正公式。
+          </p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // ============ DATA ============
+    const productionLines = {
+      line1: {
+        name: '產線 1',
+        devices: [
+          { id: 'A1', name: '裝置 A1' },
+          { id: 'A2', name: '裝置 A2' },
+          { id: 'A3', name: '裝置 A3' },
+        ]
+      },
+      line2: {
+        name: '產線 2',
+        devices: [
+          { id: 'B1', name: '裝置 B1' },
+          { id: 'B2', name: '裝置 B2' },
+        ]
+      },
+      line3: {
+        name: '產線 3',
+        devices: [
+          { id: 'C1', name: '裝置 C1' },
+          { id: 'C2', name: '裝置 C2' },
+          { id: 'C3', name: '裝置 C3' },
+          { id: 'C4', name: '裝置 C4' },
+        ]
+      }
+    };
+
+    // ============ STATE ============
+    let currentLine = 'line1';
+    let currentDevice = productionLines.line1.devices[0];
+    let calibrationPoints = [
+      { measured: 20.0, actual: 19.8 },
+      { measured: 25.0, actual: 24.7 },
+      { measured: 30.0, actual: 29.5 },
+      { measured: 35.0, actual: 34.3 },
+      { measured: 40.0, actual: 39.1 },
+    ];
+
+    // ============ DROPDOWN FUNCTIONS ============
+    function toggleDropdown(id) {
+      const menu = document.getElementById(id).querySelector('.dropdown-menu');
+      document.querySelectorAll('.dropdown-menu').forEach(m => {
+        if (m !== menu) m.classList.remove('open');
+      });
+      menu.classList.toggle('open');
+    }
+
+    function selectLine(el) {
+      const value = el.dataset.value;
+      currentLine = value;
+      document.getElementById('line-selected').textContent = productionLines[value].name;
+
+      // Update selected state
+      document.querySelectorAll('#line-menu .dropdown-item').forEach(item => item.classList.remove('selected'));
+      el.classList.add('selected');
+
+      // Update devices dropdown
+      populateDevices();
+
+      // Select first device
+      const firstDevice = productionLines[value].devices[0];
+      selectDevice(firstDevice.id);
+
+      toggleDropdown('line-dropdown');
+    }
+
+    function populateDevices() {
+      const menu = document.getElementById('device-menu');
+      const devices = productionLines[currentLine].devices;
+      menu.innerHTML = devices.map((d, i) =>
+        `<div class="dropdown-item ${i === 0 ? 'selected' : ''}" data-value="${d.id}" onclick="selectDeviceFromDropdown(this)">${d.name}</div>`
+      ).join('');
+    }
+
+    function selectDeviceFromDropdown(el) {
+      const deviceId = el.dataset.value;
+      selectDevice(deviceId);
+      toggleDropdown('device-dropdown');
+    }
+
+    function selectDevice(deviceId) {
+      const devices = productionLines[currentLine].devices;
+      currentDevice = devices.find(d => d.id === deviceId) || devices[0];
+
+      document.getElementById('device-selected').textContent = currentDevice.name;
+      document.querySelectorAll('#device-menu .dropdown-item').forEach(item => {
+        item.classList.toggle('selected', item.dataset.value === deviceId);
+      });
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.dropdown')) {
+        document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('open'));
+      }
+    });
+
+    // ============ CALIBRATION CALCULATION ============
+    function calculateCalibration() {
+      // Collect current values from inputs
+      const inputs = document.querySelectorAll('.calibration-input');
+      inputs.forEach(input => {
+        const index = parseInt(input.dataset.index);
+        const type = input.dataset.type;
+        const value = parseFloat(input.value) || 0;
+        calibrationPoints[index][type] = value;
+      });
+
+      // Filter out incomplete points
+      const validPoints = calibrationPoints.filter(p => !isNaN(p.measured) && !isNaN(p.actual));
+
+      if (validPoints.length < 2) {
+        document.getElementById('slope-value').textContent = '--';
+        document.getElementById('intercept-value').textContent = '--';
+        document.getElementById('slope-display').textContent = '--';
+        document.getElementById('intercept-display').textContent = '--';
+        document.getElementById('r-squared').textContent = '--';
+        return;
+      }
+
+      // Calculate least squares linear regression: y = ax + b
+      // Where x = measured, y = actual
+      const n = validPoints.length;
+      let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+
+      validPoints.forEach(p => {
+        sumX += p.measured;
+        sumY += p.actual;
+        sumXY += p.measured * p.actual;
+        sumX2 += p.measured * p.measured;
+      });
+
+      const denominator = n * sumX2 - sumX * sumX;
+      if (denominator === 0) return;
+
+      const slope = (n * sumXY - sumX * sumY) / denominator;
+      const intercept = (sumY - slope * sumX) / n;
+
+      // Calculate R-squared
+      const meanY = sumY / n;
+      let ssTot = 0, ssRes = 0;
+
+      validPoints.forEach(p => {
+        const predicted = slope * p.measured + intercept;
+        ssTot += Math.pow(p.actual - meanY, 2);
+        ssRes += Math.pow(p.actual - predicted, 2);
+      });
+
+      const rSquared = ssTot > 0 ? 1 - (ssRes / ssTot) : 0;
+
+      // Update display with animation
+      updateValueWithAnimation('slope-value', slope.toFixed(4));
+      updateValueWithAnimation('intercept-value', intercept >= 0 ? intercept.toFixed(4) : intercept.toFixed(4));
+      document.getElementById('slope-display').textContent = slope.toFixed(4);
+      document.getElementById('intercept-display').textContent = intercept.toFixed(4);
+      document.getElementById('r-squared').textContent = rSquared.toFixed(4);
+
+      // Update the formula display to show + or - correctly
+      const formulaIntercept = document.getElementById('intercept-value');
+      const interceptSign = formulaIntercept.previousElementSibling;
+      if (intercept >= 0) {
+        interceptSign.textContent = ' x + ';
+      } else {
+        interceptSign.textContent = ' x ';
+      }
+
+      // Flash the result section
+      const resultSection = document.getElementById('calibration-result');
+      resultSection.classList.add('animate-pulse-success');
+      setTimeout(() => resultSection.classList.remove('animate-pulse-success'), 600);
+    }
+
+    function updateValueWithAnimation(elementId, newValue) {
+      const el = document.getElementById(elementId);
+      el.classList.remove('animate-count');
+      void el.offsetWidth; // Trigger reflow
+      el.textContent = newValue;
+      el.classList.add('animate-count');
+    }
+
+    // ============ INPUT EVENT LISTENERS ============
+    document.querySelectorAll('.calibration-input').forEach(input => {
+      input.addEventListener('input', () => {
+        // Debounce the calculation
+        clearTimeout(input.calcTimeout);
+        input.calcTimeout = setTimeout(calculateCalibration, 200);
+      });
+    });
+
+    // ============ SAVE BUTTON ============
+    document.getElementById('save-btn').addEventListener('click', () => {
+      calculateCalibration();
+
+      const slopeText = document.getElementById('slope-display').textContent;
+      const interceptText = document.getElementById('intercept-display').textContent;
+      const rSquaredText = document.getElementById('r-squared').textContent;
+
+      if (slopeText === '--' || interceptText === '--') {
+        alert('請至少輸入 2 個有效的校正點');
+        return;
+      }
+
+      const deviceName = currentDevice.name;
+      const lineName = productionLines[currentLine].name;
+
+      // Show success message
+      alert(
+        `校正參數已儲存！\n\n` +
+        `裝置: ${lineName} - ${deviceName}\n` +
+        `校正公式: y = ${slopeText} × x + ${interceptText}\n` +
+        `R² = ${rSquaredText}\n\n` +
+        `所有該設備的溫度讀數將自動套用此校正公式。`
+      );
+    });
+
+    // ============ INIT ============
+    function init() {
+      populateDevices();
+      calculateCalibration();
+    }
+
+    init();
+  </script>
+</body>
+</html>

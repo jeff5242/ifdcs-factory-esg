@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>電流監控 - IFDCS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@24,100,0,0" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'primary': ['JetBrains Mono', 'monospace'],
+            'secondary': ['Geist', 'sans-serif'],
+          },
+          colors: {
+            'background': '#F2F3F0',
+            'foreground': '#111111',
+            'card': '#FFFFFF',
+            'card-foreground': '#111111',
+            'border': '#CBCCC9',
+            'muted': '#F2F3F0',
+            'muted-foreground': '#666666',
+            'primary': '#FF8400',
+            'primary-foreground': '#111111',
+            'secondary': '#E7E8E5',
+            'secondary-foreground': '#111111',
+            'sidebar': '#E7E8E5',
+            'sidebar-accent': '#CBCCC9',
+            'sidebar-foreground': '#666666',
+            'sidebar-primary': '#18181b',
+            'error': '#E5DCDA',
+            'error-foreground': '#8C1C00',
+            'warning': '#E9E3D8',
+            'warning-foreground': '#804200',
+            'success-foreground': '#004D1A',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .material-symbols-sharp {
+      font-family: 'Material Symbols Sharp';
+      font-weight: 100;
+      font-style: normal;
+      font-size: 24px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-smoothing: antialiased;
+    }
+    .icon-20 {
+      font-size: 20px;
+    }
+    .icon-16 {
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body class="h-full bg-background font-secondary">
+  <div class="flex h-full w-full">
+    <!-- Sidebar -->
+    <aside class="flex flex-col w-[280px] h-full bg-sidebar border-r border-border">
+      <!-- Sidebar Header -->
+      <div class="flex items-center gap-2 h-[88px] px-8 py-6 border-b border-border">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <path d="M16 0L32 16L16 32L0 16L16 0Z" fill="#FF8400"/>
+        </svg>
+        <span class="font-primary text-lg font-bold text-primary leading-none">IFDCS</span>
+      </div>
+
+      <!-- Sidebar Content -->
+      <nav class="flex-1 flex flex-col gap-6 px-4 py-6">
+        <span class="px-4 text-sm text-muted-foreground font-primary">主選單</span>
+
+        <div class="flex flex-col">
+          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
+            <span class="material-symbols-sharp">dashboard</span>
+            <span class="text-base">戰情中心</span>
+          </a>
+          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
+            <span class="material-symbols-sharp">eco</span>
+            <span class="text-base">碳盤查</span>
+          </a>
+          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
+            <span class="material-symbols-sharp">bolt</span>
+            <span class="text-base">電力監控</span>
+          </a>
+          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full bg-sidebar-accent text-sidebar-primary">
+            <span class="material-symbols-sharp">electric_meter</span>
+            <span class="text-base">電流監控</span>
+          </a>
+          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
+            <span class="material-symbols-sharp">precision_manufacturing</span>
+            <span class="text-base">生產數據</span>
+          </a>
+          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
+            <span class="material-symbols-sharp">notifications</span>
+            <span class="text-base">異常通知</span>
+          </a>
+          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
+            <span class="material-symbols-sharp">settings</span>
+            <span class="text-base">系統設定</span>
+          </a>
+        </div>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="flex items-center gap-2 px-8 py-6">
+        <div class="flex-1 flex flex-col gap-1">
+          <span class="text-base text-sidebar-primary">系統管理員</span>
+          <span class="text-base text-muted-foreground">admin@factory.com</span>
+        </div>
+        <span class="material-symbols-sharp text-muted-foreground">keyboard_arrow_down</span>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full">
+      <!-- Top Bar -->
+      <header class="flex items-center justify-between h-16 px-8 bg-card border-b border-border">
+        <nav class="flex items-center gap-4">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-sharp icon-20 text-muted-foreground">electric_meter</span>
+            <span class="text-sm text-muted-foreground font-primary">電流監控</span>
+          </div>
+          <span class="material-symbols-sharp icon-16 text-muted-foreground">chevron_right</span>
+          <span class="text-sm font-medium text-foreground font-primary">設備電流曲線</span>
+        </nav>
+        <div class="flex items-center gap-4">
+          <button class="flex items-center gap-1.5 h-10 px-4 rounded-full">
+            <span class="material-symbols-sharp icon-20 text-foreground">language</span>
+            <span class="text-sm text-foreground">繁中</span>
+          </button>
+          <div class="flex items-center justify-center w-10 h-10 rounded-full bg-secondary">
+            <span class="material-symbols-sharp text-foreground">person</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <div class="flex-1 flex flex-col gap-6 p-8 overflow-auto">
+        <!-- Page Header -->
+        <div class="flex items-center justify-between">
+          <div class="flex flex-col gap-1">
+            <h1 class="font-primary text-2xl font-semibold text-foreground leading-tight">設備電流監控</h1>
+            <p class="text-sm text-muted-foreground leading-normal">即時監控各設備電流曲線與異常狀態</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <!-- Device Selector -->
+            <button class="flex items-center gap-2 h-10 px-4 rounded-full bg-card border border-border hover:bg-muted transition-colors">
+              <span class="material-symbols-sharp icon-20 text-foreground">precision_manufacturing</span>
+              <span class="text-sm text-foreground">CNC 加工機 #01</span>
+              <span class="material-symbols-sharp icon-20 text-muted-foreground">keyboard_arrow_down</span>
+            </button>
+            <!-- Time Selector -->
+            <button class="flex items-center gap-2 h-10 px-4 rounded-full bg-card border border-border hover:bg-muted transition-colors">
+              <span class="material-symbols-sharp icon-20 text-foreground">schedule</span>
+              <span class="text-sm text-foreground">最近 24 小時</span>
+              <span class="material-symbols-sharp icon-20 text-muted-foreground">keyboard_arrow_down</span>
+            </button>
+            <!-- Export Button -->
+            <button class="flex items-center gap-2 h-10 px-4 rounded-full bg-primary hover:opacity-90 transition-opacity">
+              <span class="material-symbols-sharp icon-20 text-foreground">download</span>
+              <span class="text-sm font-medium text-foreground">匯出報表</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Chart Card -->
+        <div class="flex-1 flex flex-col bg-card rounded border border-border shadow-sm overflow-hidden min-h-[400px]">
+          <!-- Chart Header -->
+          <div class="flex items-center justify-between p-6 border-b border-border">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-sharp text-primary">show_chart</span>
+              <span class="font-primary text-base font-medium text-foreground">電流曲線圖 (A)</span>
+            </div>
+            <div class="flex items-center gap-6">
+              <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-md bg-primary"></div>
+                <span class="text-xs text-foreground">實際電流</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-md bg-error-foreground"></div>
+                <span class="text-xs text-foreground">警戒值</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-md bg-success-foreground"></div>
+                <span class="text-xs text-foreground">標準值</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chart Content -->
+          <div class="flex-1 p-6">
+            <canvas id="currentChart" class="w-full h-full"></canvas>
+          </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="grid grid-cols-4 gap-4">
+          <!-- Stat Card 1: 即時電流 -->
+          <div class="flex flex-col gap-2 p-5 bg-card rounded border border-border shadow-sm">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-sharp icon-20 text-primary">electric_bolt</span>
+              <span class="text-sm text-muted-foreground">即時電流</span>
+            </div>
+            <span id="realtime-current" class="font-primary text-[28px] font-semibold text-foreground leading-tight">28.5 A</span>
+            <div class="flex items-center gap-1">
+              <span class="material-symbols-sharp icon-16 text-success-foreground">trending_up</span>
+              <span class="text-xs text-success-foreground">+2.3% 較前一小時</span>
+            </div>
+          </div>
+
+          <!-- Stat Card 2: 平均電流 -->
+          <div class="flex flex-col gap-2 p-5 bg-card rounded border border-border shadow-sm">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-sharp icon-20 text-primary">speed</span>
+              <span class="text-sm text-muted-foreground">平均電流</span>
+            </div>
+            <span class="font-primary text-[28px] font-semibold text-foreground leading-tight">25.8 A</span>
+            <div class="flex items-center gap-1">
+              <span class="material-symbols-sharp icon-16 text-muted-foreground">remove</span>
+              <span class="text-xs text-muted-foreground">24小時平均值</span>
+            </div>
+          </div>
+
+          <!-- Stat Card 3: 峰值電流 -->
+          <div class="flex flex-col gap-2 p-5 bg-card rounded border border-border shadow-sm">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-sharp icon-20 text-warning-foreground">arrow_upward</span>
+              <span class="text-sm text-muted-foreground">峰值電流</span>
+            </div>
+            <span class="font-primary text-[28px] font-semibold text-foreground leading-tight">42.1 A</span>
+            <div class="flex items-center gap-1">
+              <span class="text-xs text-warning-foreground">今日 14:32 達到</span>
+            </div>
+          </div>
+
+          <!-- Stat Card 4: 異常次數 -->
+          <div class="flex flex-col gap-2 p-5 bg-card rounded border border-border shadow-sm">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-sharp icon-20 text-error-foreground">warning</span>
+              <span class="text-sm text-muted-foreground">異常次數</span>
+            </div>
+            <span class="font-primary text-[28px] font-semibold text-error-foreground leading-tight">3</span>
+            <div class="flex items-center gap-1">
+              <span class="text-xs text-error-foreground">超過警戒值 45A</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Generate realistic current data for 24 hours
+    function generateCurrentData() {
+      const data = [];
+      const hours = 24;
+      const baseValue = 25;
+
+      for (let i = 0; i < hours * 4; i++) {
+        const hour = i / 4;
+        let value = baseValue;
+
+        // Higher during work hours (8-18)
+        if (hour >= 8 && hour <= 18) {
+          value += 5 + Math.sin((hour - 8) / 10 * Math.PI) * 3;
+        }
+
+        // Add some random variation
+        value += (Math.random() - 0.5) * 4;
+
+        // Add occasional spikes
+        if (Math.random() > 0.95) {
+          value += Math.random() * 15;
+        }
+
+        // Clamp values
+        value = Math.max(10, Math.min(48, value));
+        data.push(value);
+      }
+
+      return data;
+    }
+
+    // Generate time labels
+    function generateTimeLabels() {
+      const labels = [];
+      for (let i = 0; i < 24 * 4; i++) {
+        const hour = Math.floor(i / 4);
+        const minute = (i % 4) * 15;
+        labels.push(`${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`);
+      }
+      return labels;
+    }
+
+    // Initialize Chart
+    const ctx = document.getElementById('currentChart').getContext('2d');
+    const currentData = generateCurrentData();
+    const timeLabels = generateTimeLabels();
+
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: timeLabels,
+        datasets: [
+          {
+            label: '實際電流',
+            data: currentData,
+            borderColor: '#FF8400',
+            backgroundColor: 'rgba(255, 132, 0, 0.1)',
+            borderWidth: 3,
+            tension: 0.4,
+            fill: true,
+            pointRadius: 0,
+            pointHoverRadius: 6,
+            pointHoverBackgroundColor: '#FF8400',
+            pointHoverBorderColor: '#fff',
+            pointHoverBorderWidth: 2,
+          },
+          {
+            label: '警戒值',
+            data: Array(timeLabels.length).fill(45),
+            borderColor: '#8C1C00',
+            borderWidth: 2,
+            borderDash: [5, 5],
+            pointRadius: 0,
+            fill: false,
+          },
+          {
+            label: '標準值',
+            data: Array(timeLabels.length).fill(30),
+            borderColor: '#004D1A',
+            borderWidth: 2,
+            borderDash: [5, 5],
+            pointRadius: 0,
+            fill: false,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: '#FFFFFF',
+            titleColor: '#111111',
+            bodyColor: '#111111',
+            borderColor: '#CBCCC9',
+            borderWidth: 1,
+            padding: 12,
+            displayColors: true,
+            callbacks: {
+              label: function(context) {
+                let label = context.dataset.label || '';
+                if (label) {
+                  label += ': ';
+                }
+                label += context.parsed.y.toFixed(1) + ' A';
+                return label;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              color: '#CBCCC9',
+              drawBorder: false,
+            },
+            ticks: {
+              color: '#666666',
+              maxRotation: 0,
+              autoSkipPadding: 50,
+              callback: function(value, index) {
+                if (index % 4 === 0) {
+                  return this.getLabelForValue(value);
+                }
+                return '';
+              }
+            }
+          },
+          y: {
+            beginAtZero: true,
+            max: 50,
+            grid: {
+              color: '#CBCCC9',
+              drawBorder: false,
+            },
+            ticks: {
+              color: '#666666',
+              callback: function(value) {
+                return value + ' A';
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // Update current value in real-time simulation
+    setInterval(() => {
+      const currentValue = (25 + Math.random() * 8).toFixed(1);
+      const statValue = document.getElementById('realtime-current');
+      if (statValue) {
+        statValue.textContent = currentValue + ' A';
+      }
+    }, 5000);
+  </script>
+</body>
+</html>

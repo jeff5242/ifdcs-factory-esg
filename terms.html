@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>會員服務條款 - IFDCS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'primary': ['JetBrains Mono', 'monospace'],
+                        'secondary': ['Geist', 'sans-serif'],
+                    },
+                    colors: {
+                        'background': '#F2F3F0',
+                        'foreground': '#111111',
+                        'card': '#FFFFFF',
+                        'card-foreground': '#111111',
+                        'border': '#CBCCC9',
+                        'muted': '#F2F3F0',
+                        'muted-foreground': '#666666',
+                        'primary': '#FF8400',
+                        'primary-foreground': '#111111',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="h-full bg-background font-secondary p-8 flex justify-center overflow-auto">
+    <div class="max-w-3xl w-full bg-card border border-border rounded-2xl shadow-sm p-10">
+        <div class="flex items-center gap-3 mb-8">
+            <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+                <path d="M16 0L32 16L16 32L0 16L16 0Z" fill="#FF8400" />
+            </svg>
+            <h1 class="font-primary text-2xl font-bold text-foreground">會員服務條款</h1>
+        </div>
+
+        <div class="space-y-6 text-foreground leading-relaxed">
+            <section>
+                <h2 class="text-lg font-semibold mb-2">1. 服務說明</h2>
+                <p class="text-muted-foreground">IFDCS（非侵入式數據擷取系統）提供智慧工廠數據監控服務。本服務旨在幫助客戶監控設備性能、能耗及生產指標，無需改動現有機器。</p>
+            </section>
+
+            <section>
+                <h2 class="text-lg font-semibold mb-2">2. 帳號註冊與義務</h2>
+                <ul class="list-disc ml-5 space-y-2 text-muted-foreground">
+                    <li>註冊時應提供真實、準確且完整的個人資料。</li>
+                    <li>用戶應妥善保管其帳號密碼，對其帳號下的一切行為負責。</li>
+                    <li>必須年滿 18 歲或取得法定代理人同意方得使用本服務。</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2 class="text-lg font-semibold mb-2">3. 隱私政策</h2>
+                <p class="text-muted-foreground">我們尊重用戶的隱私並遵循相關法律法規。所有數據收集僅用於系統監控與分析。詳情請參閱隱私條款。</p>
+            </section>
+
+            <section>
+                <h2 class="text-lg font-semibold mb-2">4. 數據使用與權限</h2>
+                <p class="text-muted-foreground">系統收集的設備數據屬於客戶所有，但我們擁有彙整匿名數據進行服務優化的權利。</p>
+            </section>
+
+            <section>
+                <h2 class="text-lg font-semibold mb-2">5. 條款修改</h2>
+                <p class="text-muted-foreground">IFDCS 保留隨時修改本條款之權利，修改將於網站公告，不另行個別通知。</p>
+            </section>
+
+            <section>
+                <h2 class="text-lg font-semibold mb-2">6. 終止服務</h2>
+                <p class="text-muted-foreground">若用戶違反本條款，我們有權隨時暫停或終止其帳號權限。</p>
+            </section>
+        </div>
+
+        <div class="mt-10 pt-8 border-t border-border flex justify-end">
+            <button onclick="window.close()"
+                class="px-8 py-3 bg-primary text-foreground rounded-full font-semibold hover:opacity-90 transition-opacity">
+                關閉視窗
+            </button>
+        </div>
+    </div>
+</body>
+
+</html>
