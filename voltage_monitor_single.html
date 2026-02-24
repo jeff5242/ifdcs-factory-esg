@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>單一裝置溫度監控 - IFDCS</title>
+  <title>單一裝置電壓監控 - IFDCS</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -128,7 +128,7 @@
 <body class="h-full bg-background font-secondary">
   <div class="flex h-full w-full">
     <!-- Sidebar -->
-    <aside id="sidebar" class="flex flex-col w-[280px] h-full bg-sidebar border-r border-border" data-active="溫度監控"></aside>
+    <aside id="sidebar" class="flex flex-col w-[280px] h-full bg-sidebar border-r border-border" data-active="電壓監控"></aside>
     <script src="sidebar.js"></script>
 
     <!-- Main Content -->
@@ -140,7 +140,7 @@
           <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
           <span class="text-sm text-muted-foreground">宜蘭廠區</span>
           <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
-          <span class="text-sm text-muted-foreground">溫度監控</span>
+          <span class="text-sm text-muted-foreground">電壓監控</span>
           <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
           <span id="breadcrumb-device" class="text-sm text-foreground">裝置 A1</span>
         </nav>
@@ -159,15 +159,15 @@
         <!-- Page Header -->
         <div class="flex items-center justify-between">
           <div class="flex flex-col gap-2">
-            <h1 class="font-primary text-[32px] font-semibold text-foreground">溫度監控</h1>
-            <p class="text-sm text-muted-foreground">單一裝置詳細溫度監控</p>
+            <h1 class="font-primary text-[32px] font-semibold text-foreground">電壓監控</h1>
+            <p class="text-sm text-muted-foreground">單一裝置詳細電壓監控</p>
           </div>
           <div class="flex items-center gap-3">
             <button id="refresh-btn" class="flex items-center gap-2 px-[18px] py-2.5 text-muted-foreground hover:bg-muted rounded transition-colors">
               <span class="material-symbols-sharp icon-20">refresh</span>
               <span class="text-sm">刷新</span>
             </button>
-            <a href="temperature_calibration.html" class="flex items-center gap-2 px-[18px] py-2.5 bg-primary rounded-full hover:opacity-90 transition-opacity">
+            <a href="voltage_calibration.html" class="flex items-center gap-2 px-[18px] py-2.5 bg-primary rounded-full hover:opacity-90 transition-opacity">
               <span class="material-symbols-sharp icon-20 text-foreground">tune</span>
               <span class="text-sm font-semibold text-foreground">校正設定</span>
             </a>
@@ -212,20 +212,20 @@
 
         <!-- Device Info Row -->
         <div class="flex gap-4">
-          <!-- Current Temperature Card -->
+          <!-- Current Voltage Card -->
           <div class="flex-1 flex flex-col gap-4 p-6 bg-card border border-border rounded shadow-sm">
             <div class="flex items-center justify-between">
-              <span id="device-title" class="font-primary text-base font-semibold text-foreground">裝置 A1 - 當前溫度</span>
+              <span id="device-title" class="font-primary text-base font-semibold text-foreground">裝置 A1 - 當前電壓</span>
               <div id="status-indicator" class="flex items-center gap-1.5">
                 <div class="w-2 h-2 rounded-full bg-success-foreground"></div>
                 <span class="text-xs font-medium text-success-foreground">正常</span>
               </div>
             </div>
-            <span id="current-temp" class="font-primary text-[56px] font-semibold text-foreground leading-none">24.5°C</span>
+            <span id="current-voltage" class="font-primary text-[56px] font-semibold text-foreground leading-none">220.5 V</span>
             <div class="flex gap-6">
               <div class="flex flex-col gap-1">
                 <span class="text-xs text-muted-foreground">正常範圍</span>
-                <span id="normal-range" class="text-sm font-medium text-foreground">20-30°C</span>
+                <span id="normal-range" class="text-sm font-medium text-foreground">200-240 V</span>
               </div>
               <div class="flex flex-col gap-1">
                 <span class="text-xs text-muted-foreground">最後更新</span>
@@ -240,35 +240,35 @@
             <div class="flex gap-6">
               <div class="flex-1 flex flex-col gap-2">
                 <div class="flex items-center justify-center w-8 h-8 bg-info rounded">
-                  <span class="material-symbols-sharp icon-20 text-info-foreground">thermostat</span>
+                  <span class="material-symbols-sharp icon-20 text-info-foreground">power</span>
                 </div>
-                <span class="text-xs text-muted-foreground">平均溫度</span>
-                <span id="avg-temp" class="font-primary text-2xl font-semibold text-foreground">25.2°C</span>
+                <span class="text-xs text-muted-foreground">平均電壓</span>
+                <span id="avg-voltage" class="font-primary text-2xl font-semibold text-foreground">220.2 V</span>
               </div>
               <div class="flex-1 flex flex-col gap-2">
                 <div class="flex items-center justify-center w-8 h-8 bg-error rounded">
-                  <span class="material-symbols-sharp icon-20 text-error-foreground">device_thermostat</span>
+                  <span class="material-symbols-sharp icon-20 text-error-foreground">electric_bolt</span>
                 </div>
-                <span class="text-xs text-muted-foreground">最高溫度</span>
-                <span id="max-temp" class="font-primary text-2xl font-semibold text-error-foreground">28.7°C</span>
+                <span class="text-xs text-muted-foreground">最高電壓</span>
+                <span id="max-voltage" class="font-primary text-2xl font-semibold text-error-foreground">228.7 V</span>
               </div>
               <div class="flex-1 flex flex-col gap-2">
                 <div class="flex items-center justify-center w-8 h-8 bg-info rounded">
-                  <span class="material-symbols-sharp icon-20 text-info-foreground">ac_unit</span>
+                  <span class="material-symbols-sharp icon-20 text-info-foreground">trending_down</span>
                 </div>
-                <span class="text-xs text-muted-foreground">最低溫度</span>
-                <span id="min-temp" class="font-primary text-2xl font-semibold text-info-foreground">22.1°C</span>
+                <span class="text-xs text-muted-foreground">最低電壓</span>
+                <span id="min-voltage" class="font-primary text-2xl font-semibold text-info-foreground">212.1 V</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Temperature Chart Card -->
+        <!-- Voltage Chart Card -->
         <div class="flex-1 flex flex-col gap-5 p-6 bg-card border border-border rounded shadow-sm min-h-[400px]">
           <!-- Chart Header -->
           <div class="flex items-center justify-between flex-wrap gap-4">
             <div class="flex flex-col gap-1">
-              <span class="font-primary text-lg font-semibold text-foreground">溫度變化追蹤</span>
+              <span class="font-primary text-lg font-semibold text-foreground">電壓變化追蹤</span>
               <span id="chart-subtitle" class="text-xs text-muted-foreground">解析度: 10 秒 | 範圍: 15 分鐘</span>
             </div>
             <div class="flex items-center gap-4 flex-wrap">
@@ -298,7 +298,7 @@
 
           <!-- Chart Area -->
           <div class="flex-1 bg-muted rounded p-5 min-h-0">
-            <canvas id="temperatureChart" class="w-full h-full"></canvas>
+            <canvas id="voltageChart" class="w-full h-full"></canvas>
           </div>
 
           <!-- Range Slider Section -->
@@ -347,25 +347,25 @@
       line1: {
         name: '產線 1',
         devices: [
-          { id: 'A1', name: '裝置 A1', baseTemp: 24.5, range: [20, 30] },
-          { id: 'A2', name: '裝置 A2', baseTemp: 26.8, range: [20, 30] },
-          { id: 'A3', name: '裝置 A3', baseTemp: 25.2, range: [20, 30] },
+          { id: 'A1', name: '裝置 A1', baseVoltage: 220.5, range: [200, 240] },
+          { id: 'A2', name: '裝置 A2', baseVoltage: 219.8, range: [200, 240] },
+          { id: 'A3', name: '裝置 A3', baseVoltage: 221.2, range: [200, 240] },
         ]
       },
       line2: {
         name: '產線 2',
         devices: [
-          { id: 'B1', name: '裝置 B1', baseTemp: 28.5, range: [22, 35] },
-          { id: 'B2', name: '裝置 B2', baseTemp: 30.1, range: [22, 35] },
+          { id: 'B1', name: '裝置 B1', baseVoltage: 380.5, range: [360, 400] },
+          { id: 'B2', name: '裝置 B2', baseVoltage: 379.1, range: [360, 400] },
         ]
       },
       line3: {
         name: '產線 3',
         devices: [
-          { id: 'C1', name: '裝置 C1', baseTemp: 22.0, range: [18, 28] },
-          { id: 'C2', name: '裝置 C2', baseTemp: 23.5, range: [18, 28] },
-          { id: 'C3', name: '裝置 C3', baseTemp: 21.8, range: [18, 28] },
-          { id: 'C4', name: '裝置 C4', baseTemp: 24.2, range: [18, 28] },
+          { id: 'C1', name: '裝置 C1', baseVoltage: 110.0, range: [100, 120] },
+          { id: 'C2', name: '裝置 C2', baseVoltage: 111.5, range: [100, 120] },
+          { id: 'C3', name: '裝置 C3', baseVoltage: 109.8, range: [100, 120] },
+          { id: 'C4', name: '裝置 C4', baseVoltage: 112.2, range: [100, 120] },
         ]
       }
     };
@@ -391,23 +391,18 @@
     function selectLine(el) {
       const value = el.dataset.value;
 
-      // If "all" is selected, navigate to Temperature Monitor page
       if (value === 'all') {
-        window.location.href = 'temperature_monitor.html';
+        window.location.href = 'voltage_monitor.html';
         return;
       }
 
       currentLine = value;
       document.getElementById('line-selected').textContent = productionLines[value].name;
 
-      // Update selected state
       document.querySelectorAll('#line-menu .dropdown-item').forEach(item => item.classList.remove('selected'));
       el.classList.add('selected');
 
-      // Update devices dropdown
       populateDevices();
-
-      // Select first device
       const firstDevice = productionLines[value].devices[0];
       selectDevice(firstDevice.id);
 
@@ -418,7 +413,6 @@
       const menu = document.getElementById('device-menu');
       const devices = productionLines[currentLine].devices;
 
-      // Add "全部裝置" option at the top
       let html = `<div class="dropdown-item" data-value="all" onclick="selectDeviceFromDropdown(this)">全部裝置</div>`;
       html += devices.map((d, i) =>
         `<div class="dropdown-item ${i === 0 ? 'selected' : ''}" data-value="${d.id}" onclick="selectDeviceFromDropdown(this)">${d.name}</div>`
@@ -429,9 +423,8 @@
     function selectDeviceFromDropdown(el) {
       const deviceId = el.dataset.value;
 
-      // If "all" is selected, navigate to Temperature Monitor page
       if (deviceId === 'all') {
-        window.location.href = 'temperature_monitor.html';
+        window.location.href = 'voltage_monitor.html';
         return;
       }
 
@@ -452,7 +445,6 @@
       regenerateChart();
     }
 
-    // Close dropdowns when clicking outside
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.dropdown')) {
         document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('open'));
@@ -461,15 +453,15 @@
 
     // ============ DEVICE DISPLAY ============
     function updateDeviceDisplay() {
-      const temp = currentDevice.baseTemp + (Math.random() - 0.5) * 2;
+      const voltage = currentDevice.baseVoltage + (Math.random() - 0.5) * 4;
       const [minRange, maxRange] = currentDevice.range;
-      const isNormal = temp >= minRange && temp <= maxRange;
-      const isWarning = temp > maxRange && temp <= maxRange + 5;
+      const isNormal = voltage >= minRange && voltage <= maxRange;
+      const isWarning = (voltage > maxRange && voltage <= maxRange + 10) || (voltage < minRange && voltage >= minRange - 10);
 
-      document.getElementById('device-title').textContent = `${currentDevice.name} - 當前溫度`;
+      document.getElementById('device-title').textContent = `${currentDevice.name} - 當前電壓`;
       document.getElementById('breadcrumb-device').textContent = currentDevice.name;
-      document.getElementById('current-temp').textContent = temp.toFixed(1) + '°C';
-      document.getElementById('normal-range').textContent = `${minRange}-${maxRange}°C`;
+      document.getElementById('current-voltage').textContent = voltage.toFixed(1) + ' V';
+      document.getElementById('normal-range').textContent = `${minRange}-${maxRange} V`;
 
       const statusEl = document.getElementById('status-indicator');
       if (isNormal) {
@@ -480,14 +472,13 @@
         statusEl.innerHTML = `<div class="w-2 h-2 rounded-full bg-error-foreground"></div><span class="text-xs font-medium text-error-foreground">異常</span>`;
       }
 
-      // Update statistics
-      const avgTemp = currentDevice.baseTemp + (Math.random() - 0.5);
-      const maxTemp = currentDevice.baseTemp + 2 + Math.random() * 2;
-      const minTemp = currentDevice.baseTemp - 2 - Math.random() * 2;
+      const avgVoltage = currentDevice.baseVoltage + (Math.random() - 0.5);
+      const maxVoltage = currentDevice.baseVoltage + 3 + Math.random() * 5;
+      const minVoltage = currentDevice.baseVoltage - 3 - Math.random() * 5;
 
-      document.getElementById('avg-temp').textContent = avgTemp.toFixed(1) + '°C';
-      document.getElementById('max-temp').textContent = maxTemp.toFixed(1) + '°C';
-      document.getElementById('min-temp').textContent = minTemp.toFixed(1) + '°C';
+      document.getElementById('avg-voltage').textContent = avgVoltage.toFixed(1) + ' V';
+      document.getElementById('max-voltage').textContent = maxVoltage.toFixed(1) + ' V';
+      document.getElementById('min-voltage').textContent = minVoltage.toFixed(1) + ' V';
     }
 
     // ============ RESOLUTION SELECTOR ============
@@ -568,9 +559,7 @@
 
     // ============ RANGE SLIDER ============
     function updateRangeSlider() {
-      const slider = document.getElementById('range-slider');
       const selection = document.getElementById('range-selection');
-      const sliderWidth = slider.offsetWidth;
 
       const dayStart = new Date(); dayStart.setHours(0, 0, 0, 0);
       const dayEnd = new Date(); dayEnd.setHours(24, 0, 0, 0);
@@ -637,7 +626,6 @@
       const left = parseFloat(selection.style.left);
       const width = parseFloat(selection.style.width);
 
-      // Convert back to time
       const dayStart = new Date(); dayStart.setHours(0, 0, 0, 0);
       const totalMs = 24 * 60 * 60 * 1000;
 
@@ -649,7 +637,7 @@
     });
 
     // ============ CHART ============
-    function generateTemperatureData() {
+    function generateVoltageData() {
       const data = [];
       const labels = [];
       const duration = (endTime - startTime) / 1000;
@@ -659,35 +647,35 @@
         const time = new Date(startTime.getTime() + i * currentResolution * 1000);
         labels.push(time.toTimeString().slice(0, 8));
 
-        const variation = Math.sin(i / 10) * 2 + (Math.random() - 0.5) * 1;
-        data.push(currentDevice.baseTemp + variation);
+        const variation = Math.sin(i / 10) * 3 + (Math.random() - 0.5) * 2;
+        data.push(currentDevice.baseVoltage + variation);
       }
 
       return { data, labels };
     }
 
     function regenerateChart() {
-      const { data, labels } = generateTemperatureData();
+      const { data, labels } = generateVoltageData();
       const [minRange, maxRange] = currentDevice.range;
 
       if (chart) {
         chart.data.labels = labels;
         chart.data.datasets[0].data = data;
-        chart.data.datasets[1].data = Array(labels.length).fill(maxRange + 5);
+        chart.data.datasets[1].data = Array(labels.length).fill(maxRange + 10);
         chart.data.datasets[2].data = Array(labels.length).fill((minRange + maxRange) / 2);
-        chart.options.scales.y.min = minRange - 5;
-        chart.options.scales.y.max = maxRange + 10;
+        chart.options.scales.y.min = minRange - 10;
+        chart.options.scales.y.max = maxRange + 20;
         chart.update();
       }
     }
 
     function initChart() {
-      const ctx = document.getElementById('temperatureChart').getContext('2d');
+      const ctx = document.getElementById('voltageChart').getContext('2d');
       const gradient = ctx.createLinearGradient(0, 0, 0, 300);
       gradient.addColorStop(0, 'rgba(255, 132, 0, 0.2)');
       gradient.addColorStop(1, 'rgba(255, 132, 0, 0)');
 
-      const { data, labels } = generateTemperatureData();
+      const { data, labels } = generateVoltageData();
       const [minRange, maxRange] = currentDevice.range;
 
       chart = new Chart(ctx, {
@@ -696,7 +684,7 @@
           labels: labels,
           datasets: [
             {
-              label: '實際溫度',
+              label: '實際電壓',
               data: data,
               borderColor: '#FF8400',
               backgroundColor: gradient,
@@ -711,7 +699,7 @@
             },
             {
               label: '警戒值',
-              data: Array(labels.length).fill(maxRange + 5),
+              data: Array(labels.length).fill(maxRange + 10),
               borderColor: '#EF4444',
               borderWidth: 1,
               borderDash: [5, 5],
@@ -748,8 +736,8 @@
               callbacks: {
                 title: (ctx) => ctx[0].label,
                 label: (ctx) => {
-                  const labels = ['實際溫度', '警戒值', '標準值'];
-                  return `${labels[ctx.datasetIndex]}: ${ctx.parsed.y.toFixed(1)}°C`;
+                  const labels = ['實際電壓', '警戒值', '標準值'];
+                  return `${labels[ctx.datasetIndex]}: ${ctx.parsed.y.toFixed(1)} V`;
                 }
               }
             }
@@ -760,10 +748,10 @@
               ticks: { color: '#666666', font: { size: 11 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 7 }
             },
             y: {
-              min: minRange - 5,
-              max: maxRange + 10,
+              min: minRange - 10,
+              max: maxRange + 20,
               grid: { color: '#CBCCC9', drawBorder: false },
-              ticks: { color: '#666666', font: { size: 11 }, callback: (v) => v + '°C' }
+              ticks: { color: '#666666', font: { size: 11 }, callback: (v) => v + ' V' }
             }
           }
         }
@@ -774,16 +762,15 @@
     function startRealtimeUpdates() {
       if (updateInterval) clearInterval(updateInterval);
       updateInterval = setInterval(() => {
-        const newTemp = currentDevice.baseTemp + Math.sin(Date.now() / 5000) * 2 + (Math.random() - 0.5);
-        document.getElementById('current-temp').textContent = newTemp.toFixed(1) + '°C';
+        const newVoltage = currentDevice.baseVoltage + Math.sin(Date.now() / 5000) * 3 + (Math.random() - 0.5) * 2;
+        document.getElementById('current-voltage').textContent = newVoltage.toFixed(1) + ' V';
         document.getElementById('last-update').textContent = '剛剛';
 
-        // Update chart with new point
         if (chart && chart.data.labels.length > 0) {
           const now = new Date();
           chart.data.labels.push(now.toTimeString().slice(0, 8));
           chart.data.labels.shift();
-          chart.data.datasets[0].data.push(newTemp);
+          chart.data.datasets[0].data.push(newVoltage);
           chart.data.datasets[0].data.shift();
           chart.update('none');
         }
@@ -809,7 +796,6 @@
 
     // ============ INIT ============
     function init() {
-      // Check if there's a pre-selected line and device from Temperature Monitor page
       const savedLine = sessionStorage.getItem('selectedLine');
       const savedDevice = sessionStorage.getItem('selectedDevice');
 
@@ -817,7 +803,6 @@
         currentLine = savedLine;
         document.getElementById('line-selected').textContent = productionLines[savedLine].name;
 
-        // Update line dropdown selected state
         document.querySelectorAll('#line-menu .dropdown-item').forEach(item => {
           item.classList.toggle('selected', item.dataset.value === savedLine);
         });
@@ -831,7 +816,6 @@
         if (device) {
           selectDevice(savedDevice);
         }
-        // Clear sessionStorage after using it
         sessionStorage.removeItem('selectedLine');
         sessionStorage.removeItem('selectedDevice');
       }

@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>碳盤查 ESG 監控 - IFDCS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@24,100,0,0" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'primary': ['JetBrains Mono', 'monospace'],
+            'secondary': ['Geist', 'sans-serif'],
+          },
+          colors: {
+            'background': '#0B1120',
+            'foreground': '#E2E8F0',
+            'card': '#0F172A',
+            'card-foreground': '#E2E8F0',
+            'border': 'rgba(255,255,255,0.08)',
+            'muted': '#1E293B',
+            'muted-foreground': '#94A3B8',
+            'primary': '#00FF88',
+            'primary-foreground': '#0B1120',
+            'secondary': '#1E293B',
+            'secondary-foreground': '#E2E8F0',
+            'sidebar': '#0F172A',
+            'sidebar-accent': '#1E293B',
+            'sidebar-foreground': '#94A3B8',
+            'sidebar-primary': '#E2E8F0',
+            'error': '#2D1618',
+            'error-foreground': '#FF4444',
+            'warning': '#2D2414',
+            'warning-foreground': '#FFAA00',
+            'success': '#0A2E1A',
+            'success-foreground': '#00FF88',
+            'info': '#0F1A2E',
+            'info-foreground': '#00D4FF',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .material-symbols-sharp {
+      font-family: 'Material Symbols Sharp';
+      font-weight: 100;
+      font-style: normal;
+      font-size: 24px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-smoothing: antialiased;
+    }
+    .icon-20 { font-size: 20px; }
+    .icon-14 { font-size: 14px; }
+
+    /* Glassmorphism */
+    .glass {
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .glass-light {
+      background: rgba(30, 41, 59, 0.5);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    /* Glow effects */
+    .glow-green { box-shadow: 0 0 20px rgba(0, 255, 136, 0.15), inset 0 1px 0 rgba(0, 255, 136, 0.1); }
+    .glow-red { box-shadow: 0 0 20px rgba(255, 68, 68, 0.15), inset 0 1px 0 rgba(255, 68, 68, 0.1); }
+    .glow-blue { box-shadow: 0 0 20px rgba(0, 212, 255, 0.15), inset 0 1px 0 rgba(0, 212, 255, 0.1); }
+
+    /* Grid lines background */
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+
+    @keyframes countUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Gauge */
+    .gauge-ring { transition: stroke-dashoffset 1.5s ease-out; }
+
+    /* Progress bars */
+    .carbon-progress {
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255,255,255,0.06);
+      overflow: hidden;
+      position: relative;
+    }
+    .carbon-progress-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.6s ease-out;
+    }
+    .carbon-progress-planned {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      border-right: 2px dashed rgba(255, 255, 255, 0.3);
+    }
+
+    /* Table */
+    .wo-row { transition: background-color 0.15s; }
+    .wo-row:hover { background: rgba(255, 255, 255, 0.03); }
+
+    /* Dropdown */
+    .dropdown { position: relative; }
+    .dropdown-menu {
+      position: absolute; top: 100%; left: 0; right: 0; z-index: 50;
+      margin-top: 4px;
+      background: #1E293B;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      display: none;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .dropdown-menu.open { display: block; }
+    .dropdown-item {
+      padding: 10px 16px; cursor: pointer; font-size: 14px;
+      color: #94A3B8;
+      transition: background-color 0.15s;
+    }
+    .dropdown-item:hover { background: rgba(255,255,255,0.05); color: #E2E8F0; }
+    .dropdown-item.selected { background: rgba(0,255,136,0.1); color: #00FF88; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+    /* Sidebar border override for dark theme */
+    #sidebar { border-color: rgba(255,255,255,0.06) !important; }
+  </style>
+</head>
+<body class="h-full bg-background font-secondary">
+  <div class="flex h-full w-full">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="flex flex-col w-[280px] h-full bg-sidebar border-r border-border" data-active="碳盤查"></aside>
+    <script src="sidebar.js"></script>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full">
+      <!-- Top Bar -->
+      <header class="flex items-center justify-between h-16 px-8 glass border-b border-border">
+        <nav class="flex items-center gap-2">
+          <a href="#" class="text-sm text-muted-foreground hover:text-foreground transition-colors">總部</a>
+          <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
+          <a href="#" class="text-sm text-muted-foreground hover:text-foreground transition-colors">宜蘭廠區</a>
+          <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
+          <span class="text-sm text-primary">碳盤查 ESG</span>
+        </nav>
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2 px-3 py-1.5 rounded-full glass-light">
+            <div class="w-2 h-2 rounded-full bg-primary animate-pulse-glow"></div>
+            <span class="font-primary text-xs text-primary">LIVE</span>
+          </div>
+          <button class="flex items-center gap-1.5 h-10 px-4 rounded-full">
+            <span class="font-primary text-sm font-medium text-foreground">中文</span>
+          </button>
+          <div class="flex items-center justify-center w-10 h-10 rounded-full bg-secondary">
+            <span class="font-primary text-sm font-semibold text-foreground">管</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <div class="flex-1 flex flex-col gap-5 p-6 overflow-auto grid-bg">
+
+        <!-- Page Header -->
+        <div class="flex items-center justify-between">
+          <div class="flex flex-col gap-1">
+            <h1 class="font-primary text-[26px] font-semibold text-foreground leading-tight">
+              碳盤查 &amp; ESG 監控
+            </h1>
+            <p class="text-sm text-muted-foreground">Carbon Footprint &amp; ESG Monitoring Dashboard</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="dropdown w-[160px]" id="line-dropdown">
+              <button class="flex items-center justify-between w-full h-9 px-4 glass-light rounded-full text-sm" onclick="toggleDropdown('line-dropdown')">
+                <span id="line-selected" class="text-muted-foreground">全部產線</span>
+                <span class="material-symbols-sharp icon-14 text-muted-foreground">keyboard_arrow_down</span>
+              </button>
+              <div class="dropdown-menu" id="line-menu">
+                <div class="dropdown-item selected" data-value="all" onclick="selectLine(this)">全部產線</div>
+                <div class="dropdown-item" data-value="lineA" onclick="selectLine(this)">A 產線</div>
+                <div class="dropdown-item" data-value="lineB" onclick="selectLine(this)">B 產線</div>
+                <div class="dropdown-item" data-value="lineC" onclick="selectLine(this)">C 產線</div>
+              </div>
+            </div>
+            <button id="refresh-btn" class="flex items-center gap-1.5 h-9 px-4 glass-light rounded-full text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <span class="material-symbols-sharp icon-20">refresh</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI Row -->
+        <div class="grid grid-cols-4 gap-4">
+          <!-- Carbon Intensity -->
+          <div class="glass rounded-lg p-5 glow-green animate-fade-in">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs text-muted-foreground uppercase tracking-wider">即時碳排強度</span>
+              <span class="material-symbols-sharp icon-20 text-primary">eco</span>
+            </div>
+            <div class="flex items-end gap-2 mb-1">
+              <span id="kpi-intensity" class="font-primary text-[32px] font-bold text-primary leading-none">0.42</span>
+              <span class="text-xs text-muted-foreground mb-1">kgCO₂e / unit</span>
+            </div>
+            <div class="flex items-center gap-1 mt-2">
+              <span class="material-symbols-sharp icon-14 text-primary">trending_down</span>
+              <span class="text-xs text-primary">-8.2% vs 昨日</span>
+            </div>
+          </div>
+
+          <!-- Avoidable Emissions -->
+          <div class="glass rounded-lg p-5 glow-red animate-fade-in">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs text-muted-foreground uppercase tracking-wider">可避免碳排 (浪費)</span>
+              <span class="material-symbols-sharp icon-20 text-error-foreground">warning</span>
+            </div>
+            <div class="flex items-end gap-2 mb-1">
+              <span id="kpi-waste" class="font-primary text-[32px] font-bold text-error-foreground leading-none">23.5</span>
+              <span class="text-xs text-muted-foreground mb-1">kgCO₂e</span>
+            </div>
+            <div class="flex items-center gap-1 mt-2">
+              <span class="text-xs text-error-foreground">50 次無效作動 = 浪費碳排</span>
+            </div>
+          </div>
+
+          <!-- Scope 2 Emissions -->
+          <div class="glass rounded-lg p-5 glow-blue animate-fade-in">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs text-muted-foreground uppercase tracking-wider">範疇二碳排 (電力)</span>
+              <span class="material-symbols-sharp icon-20 text-info-foreground">bolt</span>
+            </div>
+            <div class="flex items-end gap-2 mb-1">
+              <span id="kpi-scope2" class="font-primary text-[32px] font-bold text-info-foreground leading-none">186.4</span>
+              <span class="text-xs text-muted-foreground mb-1">kgCO₂e</span>
+            </div>
+            <div class="flex items-center gap-1 mt-2">
+              <span class="text-xs text-muted-foreground">V × A × hrs × 碳排係數</span>
+            </div>
+          </div>
+
+          <!-- Net Zero Gauge -->
+          <div class="glass rounded-lg p-5 animate-fade-in">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs text-muted-foreground uppercase tracking-wider">淨零目標進度</span>
+              <span class="text-xs text-primary font-primary font-medium">2030</span>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="relative w-20 h-20 flex-shrink-0">
+                <svg viewBox="0 0 80 80" class="w-full h-full -rotate-90">
+                  <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="6"/>
+                  <circle id="gauge-ring" cx="40" cy="40" r="34" fill="none" stroke="#00FF88" stroke-width="6"
+                    stroke-linecap="round" stroke-dasharray="213.6" stroke-dashoffset="213.6"
+                    class="gauge-ring"/>
+                </svg>
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <span id="gauge-value" class="font-primary text-lg font-bold text-primary">0%</span>
+                </div>
+              </div>
+              <div class="flex flex-col gap-1">
+                <span class="text-xs text-muted-foreground">年度減碳</span>
+                <span id="gauge-reduced" class="font-primary text-sm font-semibold text-foreground">-12.4 噸</span>
+                <span class="text-xs text-muted-foreground">目標 -20 噸</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Middle Row: Chart + Insight -->
+        <div class="flex gap-4" style="min-height: 320px;">
+          <!-- Combo Chart -->
+          <div class="glass rounded-lg flex-1 flex flex-col">
+            <div class="flex items-center justify-between px-5 py-3 border-b border-border">
+              <div class="flex items-center gap-3">
+                <span class="font-primary text-sm font-medium text-foreground">生產效率 vs 碳排對比</span>
+                <span class="text-xs text-muted-foreground">Production vs. Carbon Efficiency</span>
+              </div>
+              <div class="flex items-center gap-4 text-xs">
+                <div class="flex items-center gap-1.5">
+                  <div class="w-3 h-3 rounded-sm bg-info-foreground"></div>
+                  <span class="text-muted-foreground">能耗 kWh</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-3 h-3 rounded-full bg-primary"></div>
+                  <span class="text-muted-foreground">良率 %</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-3 h-3 rounded-full bg-error-foreground"></div>
+                  <span class="text-muted-foreground">碳排 kgCO₂e</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex-1 p-4">
+              <canvas id="combo-chart"></canvas>
+            </div>
+          </div>
+
+          <!-- Insight Panel -->
+          <div class="glass rounded-lg w-[320px] flex flex-col">
+            <div class="px-5 py-3 border-b border-border">
+              <span class="font-primary text-sm font-medium text-foreground">智慧洞察</span>
+            </div>
+            <div class="flex-1 flex flex-col gap-4 p-5">
+              <!-- Insight 1 -->
+              <div class="glass-light rounded-lg p-4">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="material-symbols-sharp icon-20 text-error-foreground">thermostat</span>
+                  <span class="text-xs font-medium text-error-foreground">高溫異常關聯</span>
+                </div>
+                <p class="text-xs text-muted-foreground leading-relaxed">
+                  A 區溫度持續偏高，導致良率下降 <span class="text-error-foreground font-semibold">5%</span>，
+                  碳足跡增加 <span class="text-error-foreground font-semibold">10%</span>。
+                  建議檢查冷卻系統。
+                </p>
+              </div>
+
+              <!-- Insight 2 -->
+              <div class="glass-light rounded-lg p-4">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="material-symbols-sharp icon-20 text-warning-foreground">electric_meter</span>
+                  <span class="text-xs font-medium text-warning-foreground">電力浪費偵測</span>
+                </div>
+                <p class="text-xs text-muted-foreground leading-relaxed">
+                  B 產線待機耗電佔比 <span class="text-warning-foreground font-semibold">18%</span>，
+                  每日浪費約 <span class="text-warning-foreground font-semibold">12.8 kgCO₂e</span>。
+                  建議導入自動休眠機制。
+                </p>
+              </div>
+
+              <!-- Insight 3 -->
+              <div class="glass-light rounded-lg p-4">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="material-symbols-sharp icon-20 text-primary">trending_up</span>
+                  <span class="text-xs font-medium text-primary">減碳成效</span>
+                </div>
+                <p class="text-xs text-muted-foreground leading-relaxed">
+                  C 產線本月碳排較上月降低 <span class="text-primary font-semibold">14.2%</span>，
+                  主因為優化作動頻率，減少無效產出。
+                </p>
+              </div>
+
+              <!-- Wasted Carbon Visual -->
+              <div class="glass-light rounded-lg p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <span class="material-symbols-sharp icon-20 text-error-foreground">delete_forever</span>
+                  <span class="text-xs font-medium text-foreground">無效碳排分析</span>
+                </div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs text-muted-foreground">機器作動</span>
+                  <span class="font-primary text-xs text-foreground">1,000 次</span>
+                </div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs text-muted-foreground">實際入庫</span>
+                  <span class="font-primary text-xs text-primary">950 件</span>
+                </div>
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-xs text-muted-foreground">無效碳排</span>
+                  <span class="font-primary text-xs text-error-foreground">50 × 0.47 = 23.5 kgCO₂e</span>
+                </div>
+                <div class="carbon-progress">
+                  <div class="carbon-progress-fill bg-primary" style="width: 95%"></div>
+                  <div class="carbon-progress-planned" style="left: 95%"></div>
+                </div>
+                <div class="flex justify-between mt-1">
+                  <span class="text-[10px] text-primary">有效 95%</span>
+                  <span class="text-[10px] text-error-foreground">浪費 5%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Work Order Carbon Analysis -->
+        <div class="glass rounded-lg flex flex-col">
+          <div class="flex items-center justify-between px-5 py-3 border-b border-border">
+            <div class="flex items-center gap-3">
+              <span class="font-primary text-sm font-medium text-foreground">工單碳足跡分析</span>
+              <span class="text-xs text-muted-foreground">Work Order Carbon Analysis (ERP)</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button class="wo-tab px-3 py-1.5 text-xs font-medium rounded-full bg-primary text-primary-foreground transition-colors" data-tab="active" onclick="switchWoTab(this)">進行中</button>
+              <button class="wo-tab px-3 py-1.5 text-xs font-medium rounded-full text-muted-foreground hover:text-foreground transition-colors" data-tab="completed" onclick="switchWoTab(this)">已完工</button>
+              <button class="wo-tab px-3 py-1.5 text-xs font-medium rounded-full text-muted-foreground hover:text-foreground transition-colors" data-tab="all" onclick="switchWoTab(this)">全部</button>
+            </div>
+          </div>
+
+          <!-- Table Header -->
+          <div class="grid grid-cols-12 gap-3 px-5 py-2.5 border-b border-border text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+            <div class="col-span-2">工單編號</div>
+            <div class="col-span-1">產線</div>
+            <div class="col-span-2">品名/製程</div>
+            <div class="col-span-1 text-right">目標數</div>
+            <div class="col-span-1 text-right">完工數</div>
+            <div class="col-span-1 text-right">作動次數</div>
+            <div class="col-span-1 text-right">碳排/件</div>
+            <div class="col-span-2">完成率</div>
+            <div class="col-span-1 text-right">批次碳排</div>
+          </div>
+
+          <!-- Table Body -->
+          <div id="wo-table-body"></div>
+
+          <!-- Empty -->
+          <div id="wo-empty" class="hidden flex flex-col items-center justify-center py-10">
+            <span class="material-symbols-sharp text-muted-foreground" style="font-size: 40px;">inventory_2</span>
+            <p class="mt-2 text-xs text-muted-foreground">無符合條件的工單</p>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // ============ DATA ============
+    const lineNames = { lineA: 'A 產線', lineB: 'B 產線', lineC: 'C 產線', all: '全部產線' };
+
+    const kpiData = {
+      all:   { intensity: 0.42, waste: 23.5, scope2: 186.4, netZero: 62, reduced: 12.4, wasteCycles: 50, totalCycles: 1000, warehouse: 950 },
+      lineA: { intensity: 0.45, waste: 10.2, scope2: 72.8,  netZero: 58, reduced: 4.8,  wasteCycles: 22, totalCycles: 500,  warehouse: 478 },
+      lineB: { intensity: 0.51, waste: 9.8,  scope2: 65.1,  netZero: 55, reduced: 3.6,  wasteCycles: 18, totalCycles: 300,  warehouse: 282 },
+      lineC: { intensity: 0.32, waste: 3.5,  scope2: 48.5,  netZero: 72, reduced: 4.0,  wasteCycles: 10, totalCycles: 200,  warehouse: 190 },
+    };
+
+    const chartDataByLine = {
+      all: {
+        labels: ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00'],
+        energy:   [42, 48, 55, 52, 38, 50, 58, 54, 46, 44],
+        yieldPct: [96, 95, 93, 94, 97, 94, 91, 93, 95, 96],
+        carbon:   [18, 21, 26, 24, 15, 23, 28, 25, 20, 19],
+      },
+      lineA: {
+        labels: ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00'],
+        energy:   [15, 18, 22, 20, 12, 19, 24, 21, 16, 15],
+        yieldPct: [97, 96, 92, 93, 98, 95, 90, 92, 96, 97],
+        carbon:   [6.3, 7.6, 10.5, 9.4, 4.6, 8.5, 11.8, 9.9, 6.8, 6.3],
+      },
+      lineB: {
+        labels: ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00'],
+        energy:   [16, 18, 20, 19, 15, 18, 21, 20, 17, 16],
+        yieldPct: [95, 94, 93, 94, 96, 93, 91, 93, 94, 95],
+        carbon:   [7.2, 8.1, 9.6, 8.8, 6.2, 8.3, 10.2, 9.2, 7.6, 7.2],
+      },
+      lineC: {
+        labels: ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00'],
+        energy:   [11, 12, 13, 13, 11, 13, 13, 13, 13, 13],
+        yieldPct: [98, 97, 96, 97, 98, 97, 95, 96, 97, 98],
+        carbon:   [4.5, 5.3, 5.9, 5.8, 4.2, 5.5, 6.0, 5.9, 5.6, 5.5],
+      },
+    };
+
+    const workOrders = [
+      { id: 'WO-2026-0210-001', line: 'lineA', product: 'CNC 精密軸承', targetQty: 500, completedQty: 425, machineCycles: 448, carbonPerUnit: 0.47, status: 'active' },
+      { id: 'WO-2026-0210-002', line: 'lineA', product: '射出外殼 A 型', targetQty: 1200, completedQty: 880, machineCycles: 920, carbonPerUnit: 0.38, status: 'active' },
+      { id: 'WO-2026-0210-003', line: 'lineB', product: '沖壓金屬件', targetQty: 800, completedQty: 650, machineCycles: 672, carbonPerUnit: 0.52, status: 'active' },
+      { id: 'WO-2026-0210-004', line: 'lineB', product: '焊接組裝架', targetQty: 300, completedQty: 142, machineCycles: 158, carbonPerUnit: 0.61, status: 'active' },
+      { id: 'WO-2026-0210-005', line: 'lineC', product: '表面處理板', targetQty: 600, completedQty: 580, machineCycles: 588, carbonPerUnit: 0.29, status: 'active' },
+      { id: 'WO-2026-0210-006', line: 'lineC', product: '電路板組裝', targetQty: 400, completedQty: 400, machineCycles: 412, carbonPerUnit: 0.34, status: 'completed' },
+      { id: 'WO-2026-0209-001', line: 'lineA', product: 'CNC 精密軸承', targetQty: 450, completedQty: 450, machineCycles: 468, carbonPerUnit: 0.45, status: 'completed' },
+      { id: 'WO-2026-0209-002', line: 'lineB', product: '沖壓金屬件', targetQty: 1000, completedQty: 1000, machineCycles: 1032, carbonPerUnit: 0.51, status: 'completed' },
+      { id: 'WO-2026-0209-003', line: 'lineC', product: '射出外殼 B 型', targetQty: 750, completedQty: 750, machineCycles: 762, carbonPerUnit: 0.31, status: 'completed' },
+    ];
+
+    // ============ STATE ============
+    let currentLine = 'all';
+    let currentWoTab = 'active';
+    let comboChart = null;
+
+    // ============ DROPDOWN ============
+    function toggleDropdown(id) {
+      const menu = document.getElementById(id).querySelector('.dropdown-menu');
+      document.querySelectorAll('.dropdown-menu').forEach(m => { if (m !== menu) m.classList.remove('open'); });
+      menu.classList.toggle('open');
+    }
+    function selectLine(el) {
+      currentLine = el.dataset.value;
+      document.getElementById('line-selected').textContent = lineNames[currentLine];
+      document.querySelectorAll('#line-menu .dropdown-item').forEach(i => i.classList.remove('selected'));
+      el.classList.add('selected');
+      toggleDropdown('line-dropdown');
+      updateAll();
+    }
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.dropdown')) document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('open'));
+    });
+
+    // ============ WO TABS ============
+    function switchWoTab(el) {
+      document.querySelectorAll('.wo-tab').forEach(b => {
+        b.classList.remove('bg-primary', 'text-primary-foreground');
+        b.classList.add('text-muted-foreground');
+      });
+      el.classList.remove('text-muted-foreground');
+      el.classList.add('bg-primary', 'text-primary-foreground');
+      currentWoTab = el.dataset.tab;
+      renderWorkOrders();
+    }
+
+    // ============ ANIMATE ============
+    function animateValue(el, target, decimals) {
+      const start = parseFloat(el.textContent) || 0;
+      const diff = target - start;
+      const duration = 500;
+      const startTime = performance.now();
+      function step(now) {
+        const p = Math.min((now - startTime) / duration, 1);
+        const eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = (start + diff * eased).toFixed(decimals);
+        if (p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    // ============ UPDATE KPIs ============
+    function updateKPIs() {
+      const d = kpiData[currentLine];
+      animateValue(document.getElementById('kpi-intensity'), d.intensity, 2);
+      animateValue(document.getElementById('kpi-waste'), d.waste, 1);
+      animateValue(document.getElementById('kpi-scope2'), d.scope2, 1);
+
+      // Net Zero gauge
+      const pct = d.netZero;
+      const circumference = 2 * Math.PI * 34; // ~213.6
+      const offset = circumference * (1 - pct / 100);
+      const ring = document.getElementById('gauge-ring');
+      ring.style.strokeDashoffset = offset;
+      document.getElementById('gauge-value').textContent = pct + '%';
+      document.getElementById('gauge-reduced').textContent = `-${d.reduced} 噸`;
+    }
+
+    // ============ CHART ============
+    function updateChart() {
+      const cd = chartDataByLine[currentLine];
+      if (comboChart) {
+        comboChart.data.labels = cd.labels;
+        comboChart.data.datasets[0].data = cd.energy;
+        comboChart.data.datasets[1].data = cd.yieldPct;
+        comboChart.data.datasets[2].data = cd.carbon;
+        comboChart.update('active');
+      } else {
+        const ctx = document.getElementById('combo-chart').getContext('2d');
+        comboChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: cd.labels,
+            datasets: [
+              {
+                label: '能耗 (kWh)',
+                type: 'bar',
+                data: cd.energy,
+                backgroundColor: 'rgba(0, 212, 255, 0.3)',
+                borderColor: '#00D4FF',
+                borderWidth: 1,
+                borderRadius: 3,
+                yAxisID: 'y',
+                order: 2,
+              },
+              {
+                label: '良率 (%)',
+                type: 'line',
+                data: cd.yieldPct,
+                borderColor: '#00FF88',
+                backgroundColor: 'rgba(0, 255, 136, 0.05)',
+                borderWidth: 2,
+                pointRadius: 3,
+                pointBackgroundColor: '#00FF88',
+                tension: 0.3,
+                fill: true,
+                yAxisID: 'y1',
+                order: 1,
+              },
+              {
+                label: '碳排 (kgCO₂e)',
+                type: 'line',
+                data: cd.carbon,
+                borderColor: '#FF4444',
+                borderWidth: 2,
+                borderDash: [5, 3],
+                pointRadius: 3,
+                pointBackgroundColor: '#FF4444',
+                tension: 0.3,
+                yAxisID: 'y',
+                order: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: 'rgba(15,23,42,0.95)',
+                borderColor: 'rgba(255,255,255,0.1)',
+                borderWidth: 1,
+                titleFont: { family: 'JetBrains Mono', size: 11 },
+                bodyFont: { family: 'JetBrains Mono', size: 12 },
+                padding: 12,
+                cornerRadius: 8,
+              },
+            },
+            scales: {
+              x: {
+                grid: { color: 'rgba(255,255,255,0.04)' },
+                ticks: { font: { family: 'JetBrains Mono', size: 10 }, color: '#94A3B8' },
+                border: { display: false },
+              },
+              y: {
+                position: 'left',
+                grid: { color: 'rgba(255,255,255,0.04)' },
+                ticks: { font: { family: 'JetBrains Mono', size: 10 }, color: '#94A3B8' },
+                border: { display: false },
+                title: { display: true, text: 'kWh / kgCO₂e', color: '#94A3B8', font: { size: 10 } },
+              },
+              y1: {
+                position: 'right',
+                grid: { display: false },
+                ticks: { font: { family: 'JetBrains Mono', size: 10 }, color: '#00FF88', callback: v => v + '%' },
+                border: { display: false },
+                min: 85,
+                max: 100,
+                title: { display: true, text: '良率 %', color: '#00FF88', font: { size: 10 } },
+              },
+            },
+          },
+        });
+      }
+    }
+
+    // ============ WORK ORDERS ============
+    function renderWorkOrders() {
+      const filtered = workOrders.filter(wo => {
+        if (currentLine !== 'all' && wo.line !== currentLine) return false;
+        if (currentWoTab === 'active' && wo.status !== 'active') return false;
+        if (currentWoTab === 'completed' && wo.status !== 'completed') return false;
+        return true;
+      });
+      const tbody = document.getElementById('wo-table-body');
+      const empty = document.getElementById('wo-empty');
+
+      if (filtered.length === 0) {
+        tbody.classList.add('hidden');
+        empty.classList.remove('hidden');
+        return;
+      }
+      tbody.classList.remove('hidden');
+      empty.classList.add('hidden');
+
+      tbody.innerHTML = filtered.map(wo => {
+        const progress = Math.round((wo.completedQty / wo.targetQty) * 100);
+        const planned = 100; // target line
+        const wastedCycles = wo.machineCycles - wo.completedQty;
+        const totalCarbon = (wo.completedQty * wo.carbonPerUnit).toFixed(1);
+        const wastedCarbon = (wastedCycles * wo.carbonPerUnit).toFixed(1);
+        const lineName = lineNames[wo.line] || wo.line;
+
+        let progressColor = '#00FF88';
+        if (progress < 50) progressColor = '#FF4444';
+        else if (progress < 80) progressColor = '#FFAA00';
+
+        let statusBadge = '';
+        if (wo.status === 'completed') {
+          statusBadge = `<span class="font-primary text-[10px] text-primary">● 完工</span>`;
+        } else {
+          statusBadge = `<span class="font-primary text-[10px] text-info-foreground">● 生產中</span>`;
+        }
+
+        return `
+          <div class="wo-row grid grid-cols-12 gap-3 px-5 py-2.5 border-b border-border items-center text-[13px] animate-fade-in">
+            <div class="col-span-2 font-primary text-xs font-medium text-foreground">${wo.id}</div>
+            <div class="col-span-1 text-xs text-muted-foreground">${lineName}</div>
+            <div class="col-span-2 text-xs text-foreground">${wo.product}</div>
+            <div class="col-span-1 text-right font-primary text-xs text-muted-foreground">${wo.targetQty.toLocaleString()}</div>
+            <div class="col-span-1 text-right font-primary text-xs text-foreground">${wo.completedQty.toLocaleString()}</div>
+            <div class="col-span-1 text-right font-primary text-xs text-foreground">
+              ${wo.machineCycles.toLocaleString()}
+              ${wastedCycles > 0 ? `<span class="text-error-foreground text-[10px] ml-0.5">(+${wastedCycles})</span>` : ''}
+            </div>
+            <div class="col-span-1 text-right">
+              <span class="font-primary text-xs font-semibold text-primary">${wo.carbonPerUnit}</span>
+              <span class="text-[9px] text-muted-foreground ml-0.5">kg</span>
+            </div>
+            <div class="col-span-2">
+              <div class="flex items-center gap-2">
+                <div class="carbon-progress flex-1">
+                  <div class="carbon-progress-fill" style="width: ${progress}%; background-color: ${progressColor}"></div>
+                  <div class="carbon-progress-planned" style="left: ${planned}%"></div>
+                </div>
+                <span class="font-primary text-[10px] text-muted-foreground w-7 text-right">${progress}%</span>
+              </div>
+              ${wastedCycles > 0 ? `<div class="text-[9px] text-error-foreground mt-0.5">浪費 ${wastedCarbon} kgCO₂e</div>` : ''}
+            </div>
+            <div class="col-span-1 text-right">
+              <div class="font-primary text-xs font-semibold text-foreground">${totalCarbon}</div>
+              <div class="text-[9px] text-muted-foreground">kgCO₂e</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ============ REFRESH ============
+    document.getElementById('refresh-btn').addEventListener('click', () => {
+      updateAll();
+      const icon = document.querySelector('#refresh-btn .material-symbols-sharp');
+      icon.style.transition = 'transform 0.5s';
+      icon.style.transform = 'rotate(360deg)';
+      setTimeout(() => { icon.style.transition = ''; icon.style.transform = ''; }, 500);
+    });
+
+    // ============ UPDATE ALL ============
+    function updateAll() {
+      updateKPIs();
+      updateChart();
+      renderWorkOrders();
+    }
+
+    // ============ INIT ============
+    updateAll();
+  </script>
+</body>
+</html>

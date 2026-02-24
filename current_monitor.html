@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>電流監控 - IFDCS</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -38,7 +37,10 @@
             'error-foreground': '#8C1C00',
             'warning': '#E9E3D8',
             'warning-foreground': '#804200',
+            'success': '#DFE6E1',
             'success-foreground': '#004D1A',
+            'info': '#DFDFE6',
+            'info-foreground': '#000066',
           }
         }
       }
@@ -59,91 +61,71 @@
       direction: ltr;
       -webkit-font-smoothing: antialiased;
     }
-    .icon-20 {
-      font-size: 20px;
+    .icon-20 { font-size: 20px; }
+    .icon-14 { font-size: 14px; }
+
+    /* Tab styles */
+    .filter-tab {
+      padding: 8px 20px;
+      border-radius: 9999px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: 1px solid #CBCCC9;
+      background: white;
+      color: #666666;
+      white-space: nowrap;
     }
-    .icon-16 {
-      font-size: 16px;
+    .filter-tab:hover { background: #E7E8E5; }
+    .filter-tab.active {
+      background: #FF8400;
+      color: #111111;
+      border-color: #FF8400;
     }
+
+    /* Device card hover */
+    .device-card {
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .device-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out; }
   </style>
 </head>
 <body class="h-full bg-background font-secondary">
   <div class="flex h-full w-full">
     <!-- Sidebar -->
-    <aside class="flex flex-col w-[280px] h-full bg-sidebar border-r border-border">
-      <!-- Sidebar Header -->
-      <div class="flex items-center gap-2 h-[88px] px-8 py-6 border-b border-border">
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-          <path d="M16 0L32 16L16 32L0 16L16 0Z" fill="#FF8400"/>
-        </svg>
-        <span class="font-primary text-lg font-bold text-primary leading-none">IFDCS</span>
-      </div>
-
-      <!-- Sidebar Content -->
-      <nav class="flex-1 flex flex-col gap-6 px-4 py-6">
-        <span class="px-4 text-sm text-muted-foreground font-primary">主選單</span>
-
-        <div class="flex flex-col">
-          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
-            <span class="material-symbols-sharp">dashboard</span>
-            <span class="text-base">戰情中心</span>
-          </a>
-          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
-            <span class="material-symbols-sharp">eco</span>
-            <span class="text-base">碳盤查</span>
-          </a>
-          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
-            <span class="material-symbols-sharp">bolt</span>
-            <span class="text-base">電力監控</span>
-          </a>
-          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full bg-sidebar-accent text-sidebar-primary">
-            <span class="material-symbols-sharp">electric_meter</span>
-            <span class="text-base">電流監控</span>
-          </a>
-          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
-            <span class="material-symbols-sharp">precision_manufacturing</span>
-            <span class="text-base">生產數據</span>
-          </a>
-          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
-            <span class="material-symbols-sharp">notifications</span>
-            <span class="text-base">異常通知</span>
-          </a>
-          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
-            <span class="material-symbols-sharp">settings</span>
-            <span class="text-base">系統設定</span>
-          </a>
-        </div>
-      </nav>
-
-      <!-- Sidebar Footer -->
-      <div class="flex items-center gap-2 px-8 py-6">
-        <div class="flex-1 flex flex-col gap-1">
-          <span class="text-base text-sidebar-primary">系統管理員</span>
-          <span class="text-base text-muted-foreground">admin@factory.com</span>
-        </div>
-        <span class="material-symbols-sharp text-muted-foreground">keyboard_arrow_down</span>
-      </div>
-    </aside>
+    <aside id="sidebar" class="flex flex-col w-[280px] h-full bg-sidebar border-r border-border" data-active="電流監控"></aside>
+    <script src="sidebar.js"></script>
+    <script src="data.js"></script>
 
     <!-- Main Content -->
     <main class="flex-1 flex flex-col h-full">
       <!-- Top Bar -->
       <header class="flex items-center justify-between h-16 px-8 bg-card border-b border-border">
-        <nav class="flex items-center gap-4">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-sharp icon-20 text-muted-foreground">electric_meter</span>
-            <span class="text-sm text-muted-foreground font-primary">電流監控</span>
-          </div>
-          <span class="material-symbols-sharp icon-16 text-muted-foreground">chevron_right</span>
-          <span class="text-sm font-medium text-foreground font-primary">設備電流曲線</span>
+        <nav class="flex items-center gap-2">
+          <a href="#" class="text-sm text-muted-foreground hover:text-foreground transition-colors">總部</a>
+          <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
+          <a href="#" class="text-sm text-muted-foreground hover:text-foreground transition-colors">宜蘭廠區</a>
+          <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
+          <span class="text-sm text-foreground">電流監控</span>
         </nav>
         <div class="flex items-center gap-4">
           <button class="flex items-center gap-1.5 h-10 px-4 rounded-full">
-            <span class="material-symbols-sharp icon-20 text-foreground">language</span>
-            <span class="text-sm text-foreground">繁中</span>
+            <span class="font-primary text-sm font-medium text-foreground">中文</span>
           </button>
           <div class="flex items-center justify-center w-10 h-10 rounded-full bg-secondary">
-            <span class="material-symbols-sharp text-foreground">person</span>
+            <span class="font-primary text-sm font-semibold text-foreground">管</span>
           </div>
         </div>
       </header>
@@ -152,279 +134,321 @@
       <div class="flex-1 flex flex-col gap-6 p-8 overflow-auto">
         <!-- Page Header -->
         <div class="flex items-center justify-between">
-          <div class="flex flex-col gap-1">
-            <h1 class="font-primary text-2xl font-semibold text-foreground leading-tight">設備電流監控</h1>
-            <p class="text-sm text-muted-foreground leading-normal">即時監控各設備電流曲線與異常狀態</p>
+          <div class="flex flex-col gap-2">
+            <h1 class="font-primary text-[32px] font-semibold text-foreground">電流監控</h1>
+            <p class="text-sm text-muted-foreground">監控所有裝置的即時電流狀態</p>
           </div>
           <div class="flex items-center gap-3">
-            <!-- Device Selector -->
-            <button class="flex items-center gap-2 h-10 px-4 rounded-full bg-card border border-border hover:bg-muted transition-colors">
-              <span class="material-symbols-sharp icon-20 text-foreground">precision_manufacturing</span>
-              <span class="text-sm text-foreground">CNC 加工機 #01</span>
-              <span class="material-symbols-sharp icon-20 text-muted-foreground">keyboard_arrow_down</span>
+            <button id="refresh-btn" class="flex items-center gap-2 px-[18px] py-2.5 text-muted-foreground hover:bg-muted rounded transition-colors">
+              <span class="material-symbols-sharp icon-20">refresh</span>
+              <span class="text-sm">刷新</span>
             </button>
-            <!-- Time Selector -->
-            <button class="flex items-center gap-2 h-10 px-4 rounded-full bg-card border border-border hover:bg-muted transition-colors">
-              <span class="material-symbols-sharp icon-20 text-foreground">schedule</span>
-              <span class="text-sm text-foreground">最近 24 小時</span>
-              <span class="material-symbols-sharp icon-20 text-muted-foreground">keyboard_arrow_down</span>
-            </button>
-            <!-- Export Button -->
-            <button class="flex items-center gap-2 h-10 px-4 rounded-full bg-primary hover:opacity-90 transition-opacity">
-              <span class="material-symbols-sharp icon-20 text-foreground">download</span>
-              <span class="text-sm font-medium text-foreground">匯出報表</span>
-            </button>
+            <a href="#" class="flex items-center gap-2 px-[18px] py-2.5 bg-primary rounded-full hover:opacity-90 transition-opacity">
+              <span class="material-symbols-sharp icon-20 text-foreground">tune</span>
+              <span class="text-sm font-semibold text-foreground">校正設定</span>
+            </a>
           </div>
         </div>
 
-        <!-- Chart Card -->
-        <div class="flex-1 flex flex-col bg-card rounded border border-border shadow-sm overflow-hidden min-h-[400px]">
-          <!-- Chart Header -->
-          <div class="flex items-center justify-between p-6 border-b border-border">
-            <div class="flex items-center gap-3">
-              <span class="material-symbols-sharp text-primary">show_chart</span>
-              <span class="font-primary text-base font-medium text-foreground">電流曲線圖 (A)</span>
-            </div>
-            <div class="flex items-center gap-6">
-              <div class="flex items-center gap-2">
-                <div class="w-3 h-3 rounded-md bg-primary"></div>
-                <span class="text-xs text-foreground">實際電流</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <div class="w-3 h-3 rounded-md bg-error-foreground"></div>
-                <span class="text-xs text-foreground">警戒值</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <div class="w-3 h-3 rounded-md bg-success-foreground"></div>
-                <span class="text-xs text-foreground">標準值</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Chart Content -->
-          <div class="flex-1 p-6">
-            <canvas id="currentChart" class="w-full h-full"></canvas>
+        <!-- Process Filter Tabs (Level 1) -->
+        <div class="flex items-center gap-3 flex-wrap">
+          <span class="text-[13px] font-medium text-muted-foreground shrink-0">製程篩選</span>
+          <div id="process-tabs" class="flex items-center gap-2 flex-wrap">
+            <!-- 動態生成 -->
           </div>
         </div>
 
-        <!-- Stats Row -->
+        <!-- Statistics Section -->
         <div class="grid grid-cols-4 gap-4">
-          <!-- Stat Card 1: 即時電流 -->
-          <div class="flex flex-col gap-2 p-5 bg-card rounded border border-border shadow-sm">
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-sharp icon-20 text-primary">electric_bolt</span>
-              <span class="text-sm text-muted-foreground">即時電流</span>
+          <div class="flex flex-col gap-3 p-6 bg-card border border-border rounded shadow-sm">
+            <div class="flex items-center justify-center w-10 h-10 bg-secondary rounded">
+              <span class="material-symbols-sharp text-foreground">devices</span>
             </div>
-            <span id="realtime-current" class="font-primary text-[28px] font-semibold text-foreground leading-tight">28.5 A</span>
-            <div class="flex items-center gap-1">
-              <span class="material-symbols-sharp icon-16 text-success-foreground">trending_up</span>
-              <span class="text-xs text-success-foreground">+2.3% 較前一小時</span>
-            </div>
+            <span class="text-[13px] text-muted-foreground">監控裝置數</span>
+            <span id="stat-total" class="font-primary text-[32px] font-semibold text-foreground">9</span>
           </div>
+          <div class="flex flex-col gap-3 p-6 bg-card border border-border rounded shadow-sm">
+            <div class="flex items-center justify-center w-10 h-10 bg-info rounded">
+              <span class="material-symbols-sharp text-info-foreground">electric_meter</span>
+            </div>
+            <span class="text-[13px] text-muted-foreground">平均電流</span>
+            <span id="stat-avg" class="font-primary text-[32px] font-semibold text-foreground">25.8 A</span>
+          </div>
+          <div class="flex flex-col gap-3 p-6 bg-card border border-border rounded shadow-sm">
+            <div class="flex items-center justify-center w-10 h-10 bg-error rounded">
+              <span class="material-symbols-sharp text-error-foreground">electric_bolt</span>
+            </div>
+            <span class="text-[13px] text-muted-foreground">最高電流</span>
+            <span id="stat-max" class="font-primary text-[32px] font-semibold text-error-foreground">32.5 A</span>
+          </div>
+          <div class="flex flex-col gap-3 p-6 bg-card border border-border rounded shadow-sm">
+            <div class="flex items-center justify-center w-10 h-10 bg-info rounded">
+              <span class="material-symbols-sharp text-info-foreground">trending_down</span>
+            </div>
+            <span class="text-[13px] text-muted-foreground">最低電流</span>
+            <span id="stat-min" class="font-primary text-[32px] font-semibold text-info-foreground">18.2 A</span>
+          </div>
+        </div>
 
-          <!-- Stat Card 2: 平均電流 -->
-          <div class="flex flex-col gap-2 p-5 bg-card rounded border border-border shadow-sm">
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-sharp icon-20 text-primary">speed</span>
-              <span class="text-sm text-muted-foreground">平均電流</span>
-            </div>
-            <span class="font-primary text-[28px] font-semibold text-foreground leading-tight">25.8 A</span>
-            <div class="flex items-center gap-1">
-              <span class="material-symbols-sharp icon-16 text-muted-foreground">remove</span>
-              <span class="text-xs text-muted-foreground">24小時平均值</span>
-            </div>
+        <!-- Devices Header with Line Tabs (Level 2) -->
+        <div class="flex items-center gap-4 flex-wrap">
+          <h2 class="font-primary text-lg font-semibold text-foreground shrink-0">裝置電流列表</h2>
+          <div id="line-tabs" class="flex items-center gap-2 flex-wrap">
+            <!-- 動態生成 -->
           </div>
+          <div class="flex-1"></div>
+          <span id="device-count" class="text-[13px] text-muted-foreground shrink-0">共 9 個裝置</span>
+        </div>
 
-          <!-- Stat Card 3: 峰值電流 -->
-          <div class="flex flex-col gap-2 p-5 bg-card rounded border border-border shadow-sm">
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-sharp icon-20 text-warning-foreground">arrow_upward</span>
-              <span class="text-sm text-muted-foreground">峰值電流</span>
-            </div>
-            <span class="font-primary text-[28px] font-semibold text-foreground leading-tight">42.1 A</span>
-            <div class="flex items-center gap-1">
-              <span class="text-xs text-warning-foreground">今日 14:32 達到</span>
-            </div>
-          </div>
+        <!-- Device Cards Container -->
+        <div id="device-grid" class="grid grid-cols-3 gap-4"></div>
 
-          <!-- Stat Card 4: 異常次數 -->
-          <div class="flex flex-col gap-2 p-5 bg-card rounded border border-border shadow-sm">
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-sharp icon-20 text-error-foreground">warning</span>
-              <span class="text-sm text-muted-foreground">異常次數</span>
-            </div>
-            <span class="font-primary text-[28px] font-semibold text-error-foreground leading-tight">3</span>
-            <div class="flex items-center gap-1">
-              <span class="text-xs text-error-foreground">超過警戒值 45A</span>
-            </div>
-          </div>
+        <!-- Empty State -->
+        <div id="empty-state" class="hidden flex flex-col items-center justify-center py-16 text-center">
+          <span class="material-symbols-sharp text-muted-foreground" style="font-size: 64px;">search_off</span>
+          <p class="mt-4 text-lg text-muted-foreground">沒有符合條件的裝置</p>
+          <p class="mt-2 text-sm text-muted-foreground">請嘗試調整篩選條件</p>
         </div>
       </div>
     </main>
   </div>
 
   <script>
-    // Generate realistic current data for 24 hours
-    function generateCurrentData() {
-      const data = [];
-      const hours = 24;
-      const baseValue = 25;
+    // ============ DATA ============
+    // 使用共用資料來源 (data.js)
+    const processes = PROCESSES;
+    const productionLines = PRODUCTION_LINES;
 
-      for (let i = 0; i < hours * 4; i++) {
-        const hour = i / 4;
-        let value = baseValue;
+    // 初始化裝置資料（加入 currentValue 欄位）
+    const devices = CURRENT_DEVICES.map(device => ({
+      ...device,
+      currentValue: device.baseCurrent
+    }));
 
-        // Higher during work hours (8-18)
-        if (hour >= 8 && hour <= 18) {
-          value += 5 + Math.sin((hour - 8) / 10 * Math.PI) * 3;
-        }
+    // ============ STATE ============
+    let currentProcessFilter = 'all';
+    let currentLineFilter = 'all';
+    let updateInterval = null;
 
-        // Add some random variation
-        value += (Math.random() - 0.5) * 4;
-
-        // Add occasional spikes
-        if (Math.random() > 0.95) {
-          value += Math.random() * 15;
-        }
-
-        // Clamp values
-        value = Math.max(10, Math.min(48, value));
-        data.push(value);
-      }
-
-      return data;
+    // ============ HELPER FUNCTIONS ============
+    function getDeviceStatus(device) {
+      const current = device.currentValue;
+      const [min, max] = device.range;
+      if (current >= min && current <= max) return 'normal';
+      if ((current > max && current <= max + 5) || (current < min && current >= min - 5)) return 'warning';
+      return 'error';
     }
 
-    // Generate time labels
-    function generateTimeLabels() {
-      const labels = [];
-      for (let i = 0; i < 24 * 4; i++) {
-        const hour = Math.floor(i / 4);
-        const minute = (i % 4) * 15;
-        labels.push(`${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`);
+    function getStatusDisplay(status) {
+      switch (status) {
+        case 'normal': return { text: '正常', color: 'success-foreground', bg: 'bg-success-foreground' };
+        case 'warning': return { text: '警告', color: 'warning-foreground', bg: 'bg-warning-foreground' };
+        case 'error': return { text: '異常', color: 'error-foreground', bg: 'bg-error-foreground' };
       }
-      return labels;
     }
 
-    // Initialize Chart
-    const ctx = document.getElementById('currentChart').getContext('2d');
-    const currentData = generateCurrentData();
-    const timeLabels = generateTimeLabels();
+    function getLastUpdateText() {
+      const options = ['剛剛', '1分鐘前', '2分鐘前', '3分鐘前'];
+      return options[Math.floor(Math.random() * options.length)];
+    }
 
-    const chart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: timeLabels,
-        datasets: [
-          {
-            label: '實際電流',
-            data: currentData,
-            borderColor: '#FF8400',
-            backgroundColor: 'rgba(255, 132, 0, 0.1)',
-            borderWidth: 3,
-            tension: 0.4,
-            fill: true,
-            pointRadius: 0,
-            pointHoverRadius: 6,
-            pointHoverBackgroundColor: '#FF8400',
-            pointHoverBorderColor: '#fff',
-            pointHoverBorderWidth: 2,
-          },
-          {
-            label: '警戒值',
-            data: Array(timeLabels.length).fill(45),
-            borderColor: '#8C1C00',
-            borderWidth: 2,
-            borderDash: [5, 5],
-            pointRadius: 0,
-            fill: false,
-          },
-          {
-            label: '標準值',
-            data: Array(timeLabels.length).fill(30),
-            borderColor: '#004D1A',
-            borderWidth: 2,
-            borderDash: [5, 5],
-            pointRadius: 0,
-            fill: false,
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: {
-          mode: 'index',
-          intersect: false,
-        },
-        plugins: {
-          legend: {
-            display: false
-          },
-          tooltip: {
-            backgroundColor: '#FFFFFF',
-            titleColor: '#111111',
-            bodyColor: '#111111',
-            borderColor: '#CBCCC9',
-            borderWidth: 1,
-            padding: 12,
-            displayColors: true,
-            callbacks: {
-              label: function(context) {
-                let label = context.dataset.label || '';
-                if (label) {
-                  label += ': ';
-                }
-                label += context.parsed.y.toFixed(1) + ' A';
-                return label;
-              }
+    // ============ TAB FUNCTIONS ============
+    function initProcessTabs() {
+      const container = document.getElementById('process-tabs');
+      const processList = getProcessList();
+
+      let html = `<button class="filter-tab active" data-value="all" onclick="selectProcessTab(this)">全部製程</button>`;
+      processList.forEach(p => {
+        html += `<button class="filter-tab" data-value="${p.id}" onclick="selectProcessTab(this)">${p.name}</button>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function initLineTabs() {
+      const container = document.getElementById('line-tabs');
+      const lineList = getProductionLineList(currentProcessFilter === 'all' ? null : currentProcessFilter);
+
+      let html = `<button class="filter-tab active" data-value="all" onclick="selectLineTab(this)">全部產線</button>`;
+      lineList.forEach(line => {
+        html += `<button class="filter-tab" data-value="${line.id}" onclick="selectLineTab(this)">${line.name}</button>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function selectProcessTab(el) {
+      currentProcessFilter = el.dataset.value;
+      document.querySelectorAll('#process-tabs .filter-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+
+      currentLineFilter = 'all';
+      initLineTabs();
+      renderDevices();
+    }
+
+    function selectLineTab(el) {
+      currentLineFilter = el.dataset.value;
+      document.querySelectorAll('#line-tabs .filter-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      renderDevices();
+    }
+
+    // ============ RENDER FUNCTIONS ============
+    function getFilteredDevices() {
+      return devices.filter(device => {
+        if (currentProcessFilter !== 'all') {
+          const line = productionLines[device.line];
+          if (line.process !== currentProcessFilter) return false;
+        }
+        if (currentLineFilter !== 'all' && device.line !== currentLineFilter) return false;
+        return true;
+      });
+    }
+
+    function renderDevices() {
+      const filtered = getFilteredDevices();
+      const grid = document.getElementById('device-grid');
+      const emptyState = document.getElementById('empty-state');
+
+      if (filtered.length === 0) {
+        grid.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+      } else {
+        grid.classList.remove('hidden');
+        emptyState.classList.add('hidden');
+      }
+
+      grid.innerHTML = filtered.map(device => {
+        const status = getDeviceStatus(device);
+        const statusDisplay = getStatusDisplay(status);
+        const [min, max] = device.range;
+
+        return `
+          <div class="device-card flex flex-col gap-4 p-6 bg-card border border-border rounded shadow-sm animate-fade-in"
+               onclick="navigateToDevice('${device.line}', '${device.id}')">
+            <div class="flex items-center justify-between">
+              <div class="flex flex-col">
+                <span class="font-primary text-base font-semibold text-foreground">${device.name}</span>
+                <span class="text-xs text-muted-foreground">${productionLines[device.line].name}</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <div class="w-2 h-2 rounded-full ${statusDisplay.bg}"></div>
+                <span class="text-xs font-medium text-${statusDisplay.color}">${statusDisplay.text}</span>
+              </div>
+            </div>
+            <span class="font-primary text-5xl font-semibold text-foreground device-current" data-id="${device.id}">${device.currentValue.toFixed(1)} A</span>
+            <div class="flex gap-4">
+              <div class="flex-1 flex flex-col gap-1">
+                <span class="text-xs text-muted-foreground">正常範圍</span>
+                <span class="text-sm font-medium text-foreground">${min}-${max} A</span>
+              </div>
+              <div class="flex-1 flex flex-col gap-1">
+                <span class="text-xs text-muted-foreground">最後更新</span>
+                <span class="text-sm font-medium text-foreground">${getLastUpdateText()}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('device-count').textContent = `共 ${filtered.length} 個裝置`;
+      updateStatistics(filtered);
+    }
+
+    function updateStatistics(filteredDevices) {
+      const currents = filteredDevices.map(d => d.currentValue);
+
+      if (currents.length === 0) {
+        document.getElementById('stat-total').textContent = '0';
+        document.getElementById('stat-avg').textContent = '--';
+        document.getElementById('stat-max').textContent = '--';
+        document.getElementById('stat-min').textContent = '--';
+        return;
+      }
+
+      const avg = currents.reduce((a, b) => a + b, 0) / currents.length;
+      const max = Math.max(...currents);
+      const min = Math.min(...currents);
+
+      document.getElementById('stat-total').textContent = filteredDevices.length;
+      document.getElementById('stat-avg').textContent = avg.toFixed(1) + ' A';
+      document.getElementById('stat-max').textContent = max.toFixed(1) + ' A';
+      document.getElementById('stat-min').textContent = min.toFixed(1) + ' A';
+    }
+
+    // ============ NAVIGATION ============
+    function navigateToDevice(lineId, deviceId) {
+      sessionStorage.setItem('selectedLine', lineId);
+      sessionStorage.setItem('selectedDevice', deviceId);
+      window.location.href = 'current_monitor_single.html';
+    }
+
+    // ============ REAL-TIME UPDATES ============
+    function updateCurrents() {
+      devices.forEach(device => {
+        const variation = (Math.random() - 0.5) * 3;
+        device.currentValue = device.baseCurrent + variation;
+      });
+
+      devices.forEach(device => {
+        const currentEl = document.querySelector(`.device-current[data-id="${device.id}"]`);
+        if (currentEl) {
+          currentEl.textContent = device.currentValue.toFixed(1) + ' A';
+
+          const card = currentEl.closest('.device-card');
+          if (card) {
+            const status = getDeviceStatus(device);
+            const statusDisplay = getStatusDisplay(status);
+            const statusDot = card.querySelector('.rounded-full');
+            const statusText = card.querySelector('.text-xs.font-medium');
+
+            if (statusDot) {
+              statusDot.className = `w-2 h-2 rounded-full ${statusDisplay.bg}`;
             }
-          }
-        },
-        scales: {
-          x: {
-            grid: {
-              color: '#CBCCC9',
-              drawBorder: false,
-            },
-            ticks: {
-              color: '#666666',
-              maxRotation: 0,
-              autoSkipPadding: 50,
-              callback: function(value, index) {
-                if (index % 4 === 0) {
-                  return this.getLabelForValue(value);
-                }
-                return '';
-              }
-            }
-          },
-          y: {
-            beginAtZero: true,
-            max: 50,
-            grid: {
-              color: '#CBCCC9',
-              drawBorder: false,
-            },
-            ticks: {
-              color: '#666666',
-              callback: function(value) {
-                return value + ' A';
-              }
+            if (statusText) {
+              statusText.className = `text-xs font-medium text-${statusDisplay.color}`;
+              statusText.textContent = statusDisplay.text;
             }
           }
         }
-      }
+      });
+
+      const filtered = getFilteredDevices();
+      updateStatistics(filtered);
+    }
+
+    function startRealtimeUpdates() {
+      if (updateInterval) clearInterval(updateInterval);
+      updateInterval = setInterval(updateCurrents, 3000);
+    }
+
+    // ============ REFRESH BUTTON ============
+    document.getElementById('refresh-btn').addEventListener('click', () => {
+      updateCurrents();
+      renderDevices();
+
+      const icon = document.querySelector('#refresh-btn .material-symbols-sharp');
+      icon.style.transition = 'transform 0.5s';
+      icon.style.transform = 'rotate(360deg)';
+      setTimeout(() => {
+        icon.style.transition = '';
+        icon.style.transform = '';
+      }, 500);
     });
 
-    // Update current value in real-time simulation
-    setInterval(() => {
-      const currentValue = (25 + Math.random() * 8).toFixed(1);
-      const statValue = document.getElementById('realtime-current');
-      if (statValue) {
-        statValue.textContent = currentValue + ' A';
-      }
-    }, 5000);
+    // ============ INIT ============
+    function init() {
+      initProcessTabs();
+      initLineTabs();
+
+      devices.forEach(device => {
+        device.currentValue = device.baseCurrent + (Math.random() - 0.5) * 4;
+      });
+
+      renderDevices();
+      startRealtimeUpdates();
+    }
+
+    init();
   </script>
 </body>
 </html>

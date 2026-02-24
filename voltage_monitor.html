@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>溫度監控 - IFDCS</title>
+  <title>電壓監控 - IFDCS</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -105,7 +105,7 @@
 <body class="h-full bg-background font-secondary">
   <div class="flex h-full w-full">
     <!-- Sidebar -->
-    <aside id="sidebar" class="flex flex-col w-[280px] h-full bg-sidebar border-r border-border" data-active="溫度監控"></aside>
+    <aside id="sidebar" class="flex flex-col w-[280px] h-full bg-sidebar border-r border-border" data-active="電壓監控"></aside>
     <script src="sidebar.js"></script>
     <script src="data.js"></script>
 
@@ -118,7 +118,7 @@
           <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
           <a href="#" class="text-sm text-muted-foreground hover:text-foreground transition-colors">宜蘭廠區</a>
           <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
-          <span class="text-sm text-foreground">溫度監控</span>
+          <span class="text-sm text-foreground">電壓監控</span>
         </nav>
         <div class="flex items-center gap-4">
           <button class="flex items-center gap-1.5 h-10 px-4 rounded-full">
@@ -135,15 +135,15 @@
         <!-- Page Header -->
         <div class="flex items-center justify-between">
           <div class="flex flex-col gap-2">
-            <h1 class="font-primary text-[32px] font-semibold text-foreground">溫度監控</h1>
-            <p class="text-sm text-muted-foreground">監控所有裝置的即時溫度狀態</p>
+            <h1 class="font-primary text-[32px] font-semibold text-foreground">電壓監控</h1>
+            <p class="text-sm text-muted-foreground">監控所有裝置的即時電壓狀態</p>
           </div>
           <div class="flex items-center gap-3">
             <button id="refresh-btn" class="flex items-center gap-2 px-[18px] py-2.5 text-muted-foreground hover:bg-muted rounded transition-colors">
               <span class="material-symbols-sharp icon-20">refresh</span>
               <span class="text-sm">刷新</span>
             </button>
-            <a href="temperature_calibration.html" class="flex items-center gap-2 px-[18px] py-2.5 bg-primary rounded-full hover:opacity-90 transition-opacity">
+            <a href="voltage_calibration.html" class="flex items-center gap-2 px-[18px] py-2.5 bg-primary rounded-full hover:opacity-90 transition-opacity">
               <span class="material-symbols-sharp icon-20 text-foreground">tune</span>
               <span class="text-sm font-semibold text-foreground">校正設定</span>
             </a>
@@ -169,37 +169,37 @@
             <span id="stat-total" class="font-primary text-[32px] font-semibold text-foreground">9</span>
           </div>
 
-          <!-- Average Temp Card -->
+          <!-- Average Voltage Card -->
           <div class="flex flex-col gap-3 p-6 bg-card border border-border rounded shadow-sm">
             <div class="flex items-center justify-center w-10 h-10 bg-info rounded">
-              <span class="material-symbols-sharp text-info-foreground">thermostat</span>
+              <span class="material-symbols-sharp text-info-foreground">power</span>
             </div>
-            <span class="text-[13px] text-muted-foreground">平均溫度</span>
-            <span id="stat-avg" class="font-primary text-[32px] font-semibold text-foreground">25.8°C</span>
+            <span class="text-[13px] text-muted-foreground">平均電壓</span>
+            <span id="stat-avg" class="font-primary text-[32px] font-semibold text-foreground">220.5 V</span>
           </div>
 
-          <!-- Max Temp Card -->
+          <!-- Max Voltage Card -->
           <div class="flex flex-col gap-3 p-6 bg-card border border-border rounded shadow-sm">
             <div class="flex items-center justify-center w-10 h-10 bg-error rounded">
-              <span class="material-symbols-sharp text-error-foreground">device_thermostat</span>
+              <span class="material-symbols-sharp text-error-foreground">electric_bolt</span>
             </div>
-            <span class="text-[13px] text-muted-foreground">最高溫度</span>
-            <span id="stat-max" class="font-primary text-[32px] font-semibold text-error-foreground">31.2°C</span>
+            <span class="text-[13px] text-muted-foreground">最高電壓</span>
+            <span id="stat-max" class="font-primary text-[32px] font-semibold text-error-foreground">385.2 V</span>
           </div>
 
-          <!-- Min Temp Card -->
+          <!-- Min Voltage Card -->
           <div class="flex flex-col gap-3 p-6 bg-card border border-border rounded shadow-sm">
             <div class="flex items-center justify-center w-10 h-10 bg-info rounded">
-              <span class="material-symbols-sharp text-info-foreground">ac_unit</span>
+              <span class="material-symbols-sharp text-info-foreground">trending_down</span>
             </div>
-            <span class="text-[13px] text-muted-foreground">最低溫度</span>
-            <span id="stat-min" class="font-primary text-[32px] font-semibold text-info-foreground">21.8°C</span>
+            <span class="text-[13px] text-muted-foreground">最低電壓</span>
+            <span id="stat-min" class="font-primary text-[32px] font-semibold text-info-foreground">108.5 V</span>
           </div>
         </div>
 
         <!-- Devices Header with Line Tabs (Level 2) -->
         <div class="flex items-center gap-4 flex-wrap">
-          <h2 class="font-primary text-lg font-semibold text-foreground shrink-0">裝置溫度列表</h2>
+          <h2 class="font-primary text-lg font-semibold text-foreground shrink-0">裝置電壓列表</h2>
           <div id="line-tabs" class="flex items-center gap-2 flex-wrap">
             <!-- 動態生成 -->
           </div>
@@ -228,10 +228,10 @@
     const processes = PROCESSES;
     const productionLines = PRODUCTION_LINES;
 
-    // 初始化裝置資料（加入 currentTemp 欄位）
-    const devices = TEMPERATURE_DEVICES.map(device => ({
+    // 初始化裝置資料（加入 currentVoltage 欄位）
+    const devices = VOLTAGE_DEVICES.map(device => ({
       ...device,
-      currentTemp: device.baseTemp
+      currentVoltage: device.baseVoltage
     }));
 
     // ============ STATE ============
@@ -241,10 +241,10 @@
 
     // ============ HELPER FUNCTIONS ============
     function getDeviceStatus(device) {
-      const temp = device.currentTemp;
+      const voltage = device.currentVoltage;
       const [min, max] = device.range;
-      if (temp >= min && temp <= max) return 'normal';
-      if (temp > max && temp <= max + 5) return 'warning';
+      if (voltage >= min && voltage <= max) return 'normal';
+      if ((voltage > max && voltage <= max + 10) || (voltage < min && voltage >= min - 10)) return 'warning';
       return 'error';
     }
 
@@ -289,7 +289,6 @@
       document.querySelectorAll('#process-tabs .filter-tab').forEach(t => t.classList.remove('active'));
       el.classList.add('active');
 
-      // Reset line filter and rebuild line tabs
       currentLineFilter = 'all';
       initLineTabs();
       renderDevices();
@@ -305,15 +304,11 @@
     // ============ RENDER FUNCTIONS ============
     function getFilteredDevices() {
       return devices.filter(device => {
-        // Process filter
         if (currentProcessFilter !== 'all') {
           const line = productionLines[device.line];
           if (line.process !== currentProcessFilter) return false;
         }
-
-        // Line filter
         if (currentLineFilter !== 'all' && device.line !== currentLineFilter) return false;
-
         return true;
       });
     }
@@ -349,11 +344,11 @@
                 <span class="text-xs font-medium text-${statusDisplay.color}">${statusDisplay.text}</span>
               </div>
             </div>
-            <span class="font-primary text-5xl font-semibold text-foreground device-temp" data-id="${device.id}">${device.currentTemp.toFixed(1)}°C</span>
+            <span class="font-primary text-5xl font-semibold text-foreground device-voltage" data-id="${device.id}">${device.currentVoltage.toFixed(1)} V</span>
             <div class="flex gap-4">
               <div class="flex-1 flex flex-col gap-1">
                 <span class="text-xs text-muted-foreground">正常範圍</span>
-                <span class="text-sm font-medium text-foreground">${min}-${max}°C</span>
+                <span class="text-sm font-medium text-foreground">${min}-${max} V</span>
               </div>
               <div class="flex-1 flex flex-col gap-1">
                 <span class="text-xs text-muted-foreground">最後更新</span>
@@ -364,17 +359,14 @@
         `;
       }).join('');
 
-      // Update device count
       document.getElementById('device-count').textContent = `共 ${filtered.length} 個裝置`;
-
-      // Update statistics
       updateStatistics(filtered);
     }
 
     function updateStatistics(filteredDevices) {
-      const temps = filteredDevices.map(d => d.currentTemp);
+      const voltages = filteredDevices.map(d => d.currentVoltage);
 
-      if (temps.length === 0) {
+      if (voltages.length === 0) {
         document.getElementById('stat-total').textContent = '0';
         document.getElementById('stat-avg').textContent = '--';
         document.getElementById('stat-max').textContent = '--';
@@ -382,39 +374,36 @@
         return;
       }
 
-      const avg = temps.reduce((a, b) => a + b, 0) / temps.length;
-      const max = Math.max(...temps);
-      const min = Math.min(...temps);
+      const avg = voltages.reduce((a, b) => a + b, 0) / voltages.length;
+      const max = Math.max(...voltages);
+      const min = Math.min(...voltages);
 
       document.getElementById('stat-total').textContent = filteredDevices.length;
-      document.getElementById('stat-avg').textContent = avg.toFixed(1) + '°C';
-      document.getElementById('stat-max').textContent = max.toFixed(1) + '°C';
-      document.getElementById('stat-min').textContent = min.toFixed(1) + '°C';
+      document.getElementById('stat-avg').textContent = avg.toFixed(1) + ' V';
+      document.getElementById('stat-max').textContent = max.toFixed(1) + ' V';
+      document.getElementById('stat-min').textContent = min.toFixed(1) + ' V';
     }
 
     // ============ NAVIGATION ============
     function navigateToDevice(lineId, deviceId) {
-      // Store selection in sessionStorage so single page can use it
       sessionStorage.setItem('selectedLine', lineId);
       sessionStorage.setItem('selectedDevice', deviceId);
-      window.location.href = 'temperature_monitor_single.html';
+      window.location.href = 'voltage_monitor_single.html';
     }
 
     // ============ REAL-TIME UPDATES ============
-    function updateTemperatures() {
+    function updateVoltages() {
       devices.forEach(device => {
-        const variation = (Math.random() - 0.5) * 2;
-        device.currentTemp = device.baseTemp + variation;
+        const variation = (Math.random() - 0.5) * 4;
+        device.currentVoltage = device.baseVoltage + variation;
       });
 
-      // Update DOM directly for visible devices
       devices.forEach(device => {
-        const tempEl = document.querySelector(`.device-temp[data-id="${device.id}"]`);
-        if (tempEl) {
-          tempEl.textContent = device.currentTemp.toFixed(1) + '°C';
+        const voltageEl = document.querySelector(`.device-voltage[data-id="${device.id}"]`);
+        if (voltageEl) {
+          voltageEl.textContent = device.currentVoltage.toFixed(1) + ' V';
 
-          // Update status indicator
-          const card = tempEl.closest('.device-card');
+          const card = voltageEl.closest('.device-card');
           if (card) {
             const status = getDeviceStatus(device);
             const statusDisplay = getStatusDisplay(status);
@@ -432,22 +421,20 @@
         }
       });
 
-      // Update statistics
       const filtered = getFilteredDevices();
       updateStatistics(filtered);
     }
 
     function startRealtimeUpdates() {
       if (updateInterval) clearInterval(updateInterval);
-      updateInterval = setInterval(updateTemperatures, 3000);
+      updateInterval = setInterval(updateVoltages, 3000);
     }
 
     // ============ REFRESH BUTTON ============
     document.getElementById('refresh-btn').addEventListener('click', () => {
-      updateTemperatures();
+      updateVoltages();
       renderDevices();
 
-      // Add spinning animation to refresh icon
       const icon = document.querySelector('#refresh-btn .material-symbols-sharp');
       icon.style.transition = 'transform 0.5s';
       icon.style.transform = 'rotate(360deg)';
@@ -459,13 +446,11 @@
 
     // ============ INIT ============
     function init() {
-      // 初始化 Tab 篩選
       initProcessTabs();
       initLineTabs();
 
-      // Initialize temperatures with some variation
       devices.forEach(device => {
-        device.currentTemp = device.baseTemp + (Math.random() - 0.5) * 3;
+        device.currentVoltage = device.baseVoltage + (Math.random() - 0.5) * 6;
       });
 
       renderDevices();

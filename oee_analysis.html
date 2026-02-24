@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>生產力分析 (OEE) - IFDCS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@24,100,0,0" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'primary': ['JetBrains Mono', 'monospace'],
+            'secondary': ['Geist', 'sans-serif'],
+          },
+          colors: {
+            'background': '#F2F3F0',
+            'foreground': '#111111',
+            'card': '#FFFFFF',
+            'card-foreground': '#111111',
+            'border': '#CBCCC9',
+            'muted': '#F2F3F0',
+            'muted-foreground': '#666666',
+            'primary': '#FF8400',
+            'primary-foreground': '#111111',
+            'secondary': '#E7E8E5',
+            'secondary-foreground': '#111111',
+            'sidebar': '#E7E8E5',
+            'sidebar-accent': '#CBCCC9',
+            'sidebar-foreground': '#666666',
+            'sidebar-primary': '#18181b',
+            'error': '#E5DCDA',
+            'error-foreground': '#8C1C00',
+            'warning': '#E9E3D8',
+            'warning-foreground': '#804200',
+            'success': '#DFE6E1',
+            'success-foreground': '#004D1A',
+            'info': '#DFDFE6',
+            'info-foreground': '#000066',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .material-symbols-sharp {
+      font-family: 'Material Symbols Sharp';
+      font-weight: 100;
+      font-style: normal;
+      font-size: 24px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-smoothing: antialiased;
+    }
+    .icon-20 { font-size: 20px; }
+    .icon-14 { font-size: 14px; }
+
+    /* Dropdown styles */
+    .dropdown { position: relative; }
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      margin-top: 4px;
+      background: white;
+      border: 1px solid #CBCCC9;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      display: none;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .dropdown-menu.open { display: block; }
+    .dropdown-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.15s;
+    }
+    .dropdown-item:hover { background-color: #F2F3F0; }
+    .dropdown-item.selected { background-color: #FF840020; color: #FF8400; }
+
+    /* Animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+
+    /* Progress bar */
+    .progress-bar {
+      height: 8px;
+      border-radius: 4px;
+      background: #F2F3F0;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.6s ease-out;
+    }
+
+    /* Work order progress */
+    .wo-progress {
+      height: 6px;
+      border-radius: 3px;
+      background: #F2F3F0;
+      overflow: hidden;
+    }
+    .wo-progress-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.5s ease-out;
+    }
+
+    /* Metric value transition */
+    .metric-value {
+      transition: opacity 0.2s;
+    }
+
+    /* Table row hover */
+    .wo-row {
+      transition: background-color 0.15s;
+    }
+    .wo-row:hover {
+      background-color: #F2F3F0;
+    }
+
+    /* Tab styles */
+    .tab-btn {
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .tab-btn.active {
+      background: white;
+      color: #111111;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+    .tab-btn:not(.active) {
+      color: #666666;
+    }
+    .tab-btn:not(.active):hover {
+      color: #111111;
+    }
+  </style>
+</head>
+<body class="h-full bg-background font-secondary">
+  <div class="flex h-full w-full">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="flex flex-col w-[280px] h-full bg-sidebar border-r border-border" data-active="生產數據"></aside>
+    <script src="sidebar.js"></script>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full">
+      <!-- Top Bar -->
+      <header class="flex items-center justify-between h-16 px-8 bg-card border-b border-border">
+        <nav class="flex items-center gap-2">
+          <a href="#" class="text-sm text-muted-foreground hover:text-foreground transition-colors">總部</a>
+          <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
+          <a href="#" class="text-sm text-muted-foreground hover:text-foreground transition-colors">宜蘭廠區</a>
+          <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
+          <span class="text-sm text-foreground">生產力分析</span>
+        </nav>
+        <div class="flex items-center gap-4">
+          <button class="flex items-center gap-1.5 h-10 px-4 rounded-full">
+            <span class="font-primary text-sm font-medium text-foreground">中文</span>
+          </button>
+          <div class="flex items-center justify-center w-10 h-10 rounded-full bg-secondary">
+            <span class="font-primary text-sm font-semibold text-foreground">管</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <div class="flex-1 flex flex-col gap-6 p-8 overflow-auto">
+        <!-- Page Header -->
+        <div class="flex items-center justify-between">
+          <div class="flex flex-col gap-1">
+            <h1 class="font-primary text-[28px] font-semibold text-foreground leading-tight">生產力分析 (OEE)</h1>
+            <p class="text-sm text-muted-foreground">設備稼動率與生產效率監控</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="dropdown w-[180px]" id="line-dropdown">
+              <button class="flex items-center justify-between w-full h-10 px-4 bg-background border border-border rounded-full text-sm" onclick="toggleDropdown('line-dropdown')">
+                <span id="line-selected" class="text-muted-foreground">A 產線</span>
+                <span class="material-symbols-sharp icon-14 text-foreground opacity-50">keyboard_arrow_down</span>
+              </button>
+              <div class="dropdown-menu" id="line-menu">
+                <div class="dropdown-item selected" data-value="lineA" onclick="selectLine(this)">A 產線</div>
+                <div class="dropdown-item" data-value="lineB" onclick="selectLine(this)">B 產線</div>
+                <div class="dropdown-item" data-value="lineC" onclick="selectLine(this)">C 產線</div>
+                <div class="dropdown-item" data-value="all" onclick="selectLine(this)">全部產線</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metrics Row 1: OEE -->
+        <div class="grid grid-cols-4 gap-4">
+          <div class="flex flex-col gap-2 p-6 bg-card border border-border rounded shadow-sm animate-fade-in">
+            <span class="text-sm text-muted-foreground">整體設備效率 OEE</span>
+            <div class="flex items-end gap-2">
+              <span id="metric-oee" class="metric-value font-primary text-[32px] font-semibold text-success-foreground leading-tight">87.5</span>
+              <span class="text-sm text-muted-foreground mb-1">%</span>
+            </div>
+          </div>
+          <div class="flex flex-col gap-2 p-6 bg-card border border-border rounded shadow-sm animate-fade-in">
+            <span class="text-sm text-muted-foreground">平均 UPH (小時產能)</span>
+            <div class="flex items-end gap-2">
+              <span id="metric-uph" class="metric-value font-primary text-[32px] font-semibold text-foreground leading-tight">156</span>
+              <span class="text-sm text-muted-foreground mb-1">件/小時</span>
+            </div>
+          </div>
+          <div class="flex flex-col gap-2 p-6 bg-card border border-border rounded shadow-sm animate-fade-in">
+            <span class="text-sm text-muted-foreground">今日產量達成率</span>
+            <div class="flex items-end gap-2">
+              <span id="metric-achievement" class="metric-value font-primary text-[32px] font-semibold text-foreground leading-tight">92.3</span>
+              <span class="text-sm text-muted-foreground mb-1">%</span>
+            </div>
+          </div>
+          <div class="flex flex-col gap-2 p-6 bg-card border border-border rounded shadow-sm animate-fade-in">
+            <span class="text-sm text-muted-foreground">今日停機時間</span>
+            <div class="flex items-end gap-2">
+              <span id="metric-downtime" class="metric-value font-primary text-[32px] font-semibold text-warning-foreground leading-tight">45</span>
+              <span class="text-sm text-muted-foreground mb-1">分鐘</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metrics Row 2: ERP KPIs -->
+        <div class="grid grid-cols-4 gap-4">
+          <div class="flex flex-col gap-2 p-5 bg-card border border-border rounded shadow-sm animate-fade-in">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-sharp icon-20 text-info-foreground">verified</span>
+              <span class="text-[13px] text-muted-foreground">生產良率 (Yield)</span>
+            </div>
+            <div class="flex items-end gap-2">
+              <span id="metric-yield" class="metric-value font-primary text-[28px] font-semibold text-foreground leading-tight">96.8</span>
+              <span class="text-sm text-muted-foreground mb-0.5">%</span>
+            </div>
+            <span class="text-[11px] text-muted-foreground">合格品 / 總投入數</span>
+          </div>
+          <div class="flex flex-col gap-2 p-5 bg-card border border-border rounded shadow-sm animate-fade-in">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-sharp icon-20 text-success-foreground">task_alt</span>
+              <span class="text-[13px] text-muted-foreground">生產完成率</span>
+            </div>
+            <div class="flex items-end gap-2">
+              <span id="metric-completion" class="metric-value font-primary text-[28px] font-semibold text-foreground leading-tight">85.2</span>
+              <span class="text-sm text-muted-foreground mb-0.5">%</span>
+            </div>
+            <span class="text-[11px] text-muted-foreground">實際完工 / 工單目標</span>
+          </div>
+          <div class="flex flex-col gap-2 p-5 bg-card border border-border rounded shadow-sm animate-fade-in">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-sharp icon-20 text-warning-foreground">replay</span>
+              <span class="text-[13px] text-muted-foreground">重工率 (Rework)</span>
+            </div>
+            <div class="flex items-end gap-2">
+              <span id="metric-rework" class="metric-value font-primary text-[28px] font-semibold text-foreground leading-tight">2.4</span>
+              <span class="text-sm text-muted-foreground mb-0.5">%</span>
+            </div>
+            <span class="text-[11px] text-muted-foreground">重工次數 / 總產出</span>
+          </div>
+          <div class="flex flex-col gap-2 p-5 bg-card border border-border rounded shadow-sm animate-fade-in">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-sharp icon-20 text-primary">speed</span>
+              <span class="text-[13px] text-muted-foreground">產能利用率</span>
+            </div>
+            <div class="flex items-end gap-2">
+              <span id="metric-utilization" class="metric-value font-primary text-[28px] font-semibold text-foreground leading-tight">78.5</span>
+              <span class="text-sm text-muted-foreground mb-0.5">%</span>
+            </div>
+            <span class="text-[11px] text-muted-foreground">實際產能 / 理論最大</span>
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="flex gap-4" style="min-height: 320px;">
+          <!-- UPH Chart Card -->
+          <div class="flex flex-col bg-card border border-border rounded shadow-sm flex-1">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-border">
+              <span class="font-primary text-base font-medium text-foreground">UPH 趨勢圖 (本週)</span>
+              <div class="flex items-center gap-2">
+                <button class="tab-period px-3 py-1.5 text-xs font-medium rounded-full bg-foreground text-white transition-colors" data-period="week" onclick="switchPeriod(this)">本週</button>
+                <button class="tab-period px-3 py-1.5 text-xs font-medium rounded-full text-muted-foreground hover:bg-muted transition-colors" data-period="month" onclick="switchPeriod(this)">本月</button>
+              </div>
+            </div>
+            <div class="flex-1 p-6">
+              <canvas id="uph-chart"></canvas>
+            </div>
+          </div>
+
+          <!-- Downtime Card -->
+          <div class="flex flex-col bg-card border border-border rounded shadow-sm w-[400px]">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-border">
+              <span class="font-primary text-base font-medium text-foreground">停機原因分析</span>
+            </div>
+            <div class="flex-1 flex flex-col gap-5 p-6">
+              <div id="downtime-list" class="flex flex-col gap-4"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Work Orders Section -->
+        <div class="flex flex-col bg-card border border-border rounded shadow-sm">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-border">
+            <div class="flex items-center gap-3">
+              <span class="font-primary text-base font-medium text-foreground">工單追蹤</span>
+              <span class="text-xs text-muted-foreground">(ERP 匯入)</span>
+            </div>
+            <div class="flex items-center bg-secondary rounded-full p-1">
+              <button class="tab-btn active" data-tab="active" onclick="switchWoTab(this)">進行中</button>
+              <button class="tab-btn" data-tab="completed" onclick="switchWoTab(this)">已完工</button>
+              <button class="tab-btn" data-tab="all" onclick="switchWoTab(this)">全部</button>
+            </div>
+          </div>
+
+          <!-- Table Header -->
+          <div class="grid grid-cols-12 gap-4 px-6 py-3 border-b border-border bg-muted text-[12px] font-medium text-muted-foreground">
+            <div class="col-span-2">工單編號</div>
+            <div class="col-span-1">產線</div>
+            <div class="col-span-2">製程</div>
+            <div class="col-span-1 text-right">投料數</div>
+            <div class="col-span-1 text-right">完工數</div>
+            <div class="col-span-1 text-right">入庫數</div>
+            <div class="col-span-1 text-right">良率</div>
+            <div class="col-span-2">進度</div>
+            <div class="col-span-1 text-right">狀態</div>
+          </div>
+
+          <!-- Table Body -->
+          <div id="wo-table-body"></div>
+
+          <!-- Table Empty -->
+          <div id="wo-empty" class="hidden flex flex-col items-center justify-center py-12 text-center">
+            <span class="material-symbols-sharp text-muted-foreground" style="font-size: 48px;">inventory_2</span>
+            <p class="mt-3 text-sm text-muted-foreground">沒有符合條件的工單</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // ============ DATA ============
+    const lineData = {
+      lineA: {
+        name: 'A 產線',
+        oee: 87.5, uph: 156, achievement: 92.3, downtime: 45,
+        yield: 96.8, completion: 85.2, rework: 2.4, utilization: 78.5,
+        weeklyUPH: [142, 158, 148, 165, 152, 161, 172],
+        monthlyUPH: [145, 152, 148, 160, 155, 162, 158, 150, 165, 170, 148, 155, 162, 168, 158, 172, 165, 160, 155, 175, 168, 170, 162, 158, 175, 180, 172, 165, 178, 170],
+        downtimeReasons: [
+          { label: '設備故障', value: 35, color: '#8C1C00' },
+          { label: '換料/換模', value: 28, color: '#804200' },
+          { label: '品質測試', value: 22, color: '#000066' },
+          { label: '計畫停機', value: 15, color: '#666666' },
+        ],
+      },
+      lineB: {
+        name: 'B 產線',
+        oee: 82.1, uph: 138, achievement: 88.7, downtime: 62,
+        yield: 94.2, completion: 79.8, rework: 3.8, utilization: 72.1,
+        weeklyUPH: [130, 135, 140, 132, 145, 138, 142],
+        monthlyUPH: [128, 132, 135, 130, 140, 138, 135, 142, 130, 145, 140, 132, 138, 142, 135, 148, 140, 138, 145, 150, 142, 138, 145, 140, 148, 152, 145, 142, 150, 148],
+        downtimeReasons: [
+          { label: '換料/換模', value: 38, color: '#804200' },
+          { label: '設備故障', value: 25, color: '#8C1C00' },
+          { label: '計畫停機', value: 22, color: '#666666' },
+          { label: '品質測試', value: 15, color: '#000066' },
+        ],
+      },
+      lineC: {
+        name: 'C 產線',
+        oee: 91.2, uph: 172, achievement: 95.8, downtime: 28,
+        yield: 98.1, completion: 91.5, rework: 1.2, utilization: 85.3,
+        weeklyUPH: [168, 175, 170, 180, 172, 178, 185],
+        monthlyUPH: [165, 170, 168, 175, 172, 178, 175, 170, 180, 185, 172, 178, 180, 185, 175, 188, 180, 178, 185, 190, 182, 185, 180, 175, 188, 192, 185, 180, 190, 188],
+        downtimeReasons: [
+          { label: '品質測試', value: 40, color: '#000066' },
+          { label: '計畫停機', value: 30, color: '#666666' },
+          { label: '換料/換模', value: 18, color: '#804200' },
+          { label: '設備故障', value: 12, color: '#8C1C00' },
+        ],
+      },
+      all: {
+        name: '全部產線',
+        oee: 86.9, uph: 155, achievement: 92.3, downtime: 135,
+        yield: 96.4, completion: 85.5, rework: 2.5, utilization: 78.6,
+        weeklyUPH: [147, 156, 153, 159, 156, 159, 166],
+        monthlyUPH: [146, 151, 150, 155, 156, 159, 156, 154, 158, 167, 153, 155, 160, 165, 156, 169, 162, 159, 162, 172, 164, 164, 162, 158, 170, 175, 167, 162, 173, 169],
+        downtimeReasons: [
+          { label: '設備故障', value: 24, color: '#8C1C00' },
+          { label: '換料/換模', value: 28, color: '#804200' },
+          { label: '品質測試', value: 26, color: '#000066' },
+          { label: '計畫停機', value: 22, color: '#666666' },
+        ],
+      },
+    };
+
+    // ERP Work Orders (模擬 ERP 匯入資料)
+    const workOrders = [
+      { id: 'WO-2026-0210-001', line: 'lineA', process: 'CNC 精密加工', inputQty: 500, completedQty: 425, warehouseQty: 412, targetQty: 500, status: 'active' },
+      { id: 'WO-2026-0210-002', line: 'lineA', process: '射出成型', inputQty: 1200, completedQty: 880, warehouseQty: 865, targetQty: 1200, status: 'active' },
+      { id: 'WO-2026-0210-003', line: 'lineB', process: '沖壓加工', inputQty: 800, completedQty: 650, warehouseQty: 628, targetQty: 800, status: 'active' },
+      { id: 'WO-2026-0210-004', line: 'lineB', process: '焊接組裝', inputQty: 300, completedQty: 142, warehouseQty: 138, targetQty: 300, status: 'active' },
+      { id: 'WO-2026-0210-005', line: 'lineC', process: '表面處理', inputQty: 600, completedQty: 580, warehouseQty: 572, targetQty: 600, status: 'active' },
+      { id: 'WO-2026-0210-006', line: 'lineC', process: '組裝測試', inputQty: 400, completedQty: 400, warehouseQty: 392, targetQty: 400, status: 'completed' },
+      { id: 'WO-2026-0209-001', line: 'lineA', process: 'CNC 精密加工', inputQty: 450, completedQty: 450, warehouseQty: 438, targetQty: 450, status: 'completed' },
+      { id: 'WO-2026-0209-002', line: 'lineB', process: '沖壓加工', inputQty: 1000, completedQty: 1000, warehouseQty: 968, targetQty: 1000, status: 'completed' },
+      { id: 'WO-2026-0209-003', line: 'lineC', process: '射出成型', inputQty: 750, completedQty: 750, warehouseQty: 735, targetQty: 750, status: 'completed' },
+      { id: 'WO-2026-0209-004', line: 'lineA', process: '焊接組裝', inputQty: 200, completedQty: 200, warehouseQty: 194, targetQty: 200, status: 'completed' },
+    ];
+
+    const weekLabels = ['一', '二', '三', '四', '五', '六', '日'];
+    const monthLabels = Array.from({ length: 30 }, (_, i) => `${i + 1}`);
+
+    // ============ STATE ============
+    let currentLine = 'lineA';
+    let currentPeriod = 'week';
+    let currentWoTab = 'active';
+    let uphChart = null;
+
+    // ============ DROPDOWN ============
+    function toggleDropdown(id) {
+      const menu = document.getElementById(id).querySelector('.dropdown-menu');
+      document.querySelectorAll('.dropdown-menu').forEach(m => {
+        if (m !== menu) m.classList.remove('open');
+      });
+      menu.classList.toggle('open');
+    }
+
+    function selectLine(el) {
+      const value = el.dataset.value;
+      currentLine = value;
+      document.getElementById('line-selected').textContent = lineData[value].name;
+      document.querySelectorAll('#line-menu .dropdown-item').forEach(item => item.classList.remove('selected'));
+      el.classList.add('selected');
+      toggleDropdown('line-dropdown');
+      updateAll();
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.dropdown')) {
+        document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('open'));
+      }
+    });
+
+    // ============ PERIOD TABS ============
+    function switchPeriod(el) {
+      document.querySelectorAll('.tab-period').forEach(b => {
+        b.classList.remove('bg-foreground', 'text-white');
+        b.classList.add('text-muted-foreground');
+      });
+      el.classList.remove('text-muted-foreground');
+      el.classList.add('bg-foreground', 'text-white');
+      currentPeriod = el.dataset.period;
+      updateChart();
+    }
+
+    // ============ WO TABS ============
+    function switchWoTab(el) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      currentWoTab = el.dataset.tab;
+      renderWorkOrders();
+    }
+
+    // ============ UPDATE FUNCTIONS ============
+    function updateMetrics() {
+      const data = lineData[currentLine];
+
+      animateValue(document.getElementById('metric-oee'), data.oee, 1);
+      animateValue(document.getElementById('metric-uph'), data.uph, 0);
+      animateValue(document.getElementById('metric-achievement'), data.achievement, 1);
+      animateValue(document.getElementById('metric-downtime'), data.downtime, 0);
+
+      // ERP KPIs
+      animateValue(document.getElementById('metric-yield'), data.yield, 1);
+      animateValue(document.getElementById('metric-completion'), data.completion, 1);
+      animateValue(document.getElementById('metric-rework'), data.rework, 1);
+      animateValue(document.getElementById('metric-utilization'), data.utilization, 1);
+
+      // Color: OEE
+      const oeeEl = document.getElementById('metric-oee');
+      oeeEl.className = oeeEl.className.replace(/text-\S+-foreground/g, '');
+      oeeEl.classList.add(data.oee >= 85 ? 'text-success-foreground' : data.oee >= 70 ? 'text-warning-foreground' : 'text-error-foreground');
+
+      // Color: downtime
+      const dtEl = document.getElementById('metric-downtime');
+      dtEl.className = dtEl.className.replace(/text-\S+-foreground/g, '');
+      dtEl.classList.add(data.downtime <= 30 ? 'text-success-foreground' : data.downtime <= 60 ? 'text-warning-foreground' : 'text-error-foreground');
+
+      // Color: rework
+      const rwEl = document.getElementById('metric-rework');
+      rwEl.className = rwEl.className.replace(/text-\S+-foreground/g, '');
+      rwEl.classList.add(data.rework <= 2 ? 'text-success-foreground' : data.rework <= 4 ? 'text-warning-foreground' : 'text-error-foreground');
+
+      // Color: yield
+      const yldEl = document.getElementById('metric-yield');
+      yldEl.className = yldEl.className.replace(/text-\S+-foreground/g, '');
+      yldEl.classList.add(data.yield >= 96 ? 'text-success-foreground' : data.yield >= 90 ? 'text-warning-foreground' : 'text-error-foreground');
+
+      // Color: completion
+      const cmpEl = document.getElementById('metric-completion');
+      cmpEl.className = cmpEl.className.replace(/text-\S+-foreground/g, '');
+      cmpEl.classList.add(data.completion >= 90 ? 'text-success-foreground' : data.completion >= 75 ? 'text-warning-foreground' : 'text-error-foreground');
+
+      // Color: utilization
+      const utlEl = document.getElementById('metric-utilization');
+      utlEl.className = utlEl.className.replace(/text-\S+-foreground/g, '');
+      utlEl.classList.add(data.utilization >= 80 ? 'text-success-foreground' : data.utilization >= 65 ? 'text-warning-foreground' : 'text-error-foreground');
+    }
+
+    function animateValue(el, target, decimals) {
+      const start = parseFloat(el.textContent) || 0;
+      const diff = target - start;
+      const duration = 400;
+      const startTime = performance.now();
+
+      function step(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = (start + diff * eased).toFixed(decimals);
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    function updateChart() {
+      const data = lineData[currentLine];
+      const isWeek = currentPeriod === 'week';
+      const labels = isWeek ? weekLabels : monthLabels;
+      const values = isWeek ? data.weeklyUPH : data.monthlyUPH;
+      const todayIndex = values.length - 1;
+      const bgColors = values.map((_, i) => i === todayIndex ? '#004D1A' : '#FF8400');
+
+      if (uphChart) {
+        uphChart.data.labels = labels;
+        uphChart.data.datasets[0].data = values;
+        uphChart.data.datasets[0].backgroundColor = bgColors;
+        uphChart.data.datasets[0].barPercentage = isWeek ? 0.5 : 0.7;
+        uphChart.data.datasets[0].categoryPercentage = isWeek ? 0.6 : 0.8;
+        uphChart.update('active');
+      } else {
+        const ctx = document.getElementById('uph-chart').getContext('2d');
+        uphChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [{
+              label: 'UPH',
+              data: values,
+              backgroundColor: bgColors,
+              borderRadius: { topLeft: 4, topRight: 4 },
+              borderSkipped: false,
+              barPercentage: isWeek ? 0.5 : 0.7,
+              categoryPercentage: isWeek ? 0.6 : 0.8,
+            }],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: '#111111',
+                titleFont: { family: 'JetBrains Mono', size: 12 },
+                bodyFont: { family: 'JetBrains Mono', size: 13 },
+                padding: 10,
+                cornerRadius: 8,
+                callbacks: { label: (ctx) => `${ctx.parsed.y} 件/小時` },
+              },
+            },
+            scales: {
+              x: {
+                grid: { display: false },
+                ticks: { font: { family: 'Geist', size: 12 }, color: '#666666' },
+                border: { display: false },
+              },
+              y: {
+                grid: { color: '#F2F3F0' },
+                ticks: { font: { family: 'JetBrains Mono', size: 11 }, color: '#666666' },
+                border: { display: false },
+                beginAtZero: false,
+              },
+            },
+          },
+        });
+      }
+    }
+
+    function updateDowntime() {
+      const data = lineData[currentLine];
+      const list = document.getElementById('downtime-list');
+
+      list.innerHTML = data.downtimeReasons.map(reason => `
+        <div class="flex flex-col gap-2 animate-fade-in">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-4 h-4 rounded" style="background-color: ${reason.color}"></div>
+              <span class="text-sm text-foreground">${reason.label}</span>
+            </div>
+            <span class="font-primary text-sm font-semibold" style="color: ${reason.color}">${reason.value}%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-bar-fill" style="width: ${reason.value}%; background-color: ${reason.color}"></div>
+          </div>
+        </div>
+      `).join('');
+
+      requestAnimationFrame(() => {
+        document.querySelectorAll('.progress-bar-fill').forEach(bar => {
+          const width = bar.style.width;
+          bar.style.width = '0%';
+          requestAnimationFrame(() => { bar.style.width = width; });
+        });
+      });
+    }
+
+    function renderWorkOrders() {
+      const filtered = workOrders.filter(wo => {
+        if (currentLine !== 'all' && wo.line !== currentLine) return false;
+        if (currentWoTab === 'active' && wo.status !== 'active') return false;
+        if (currentWoTab === 'completed' && wo.status !== 'completed') return false;
+        return true;
+      });
+
+      const tbody = document.getElementById('wo-table-body');
+      const empty = document.getElementById('wo-empty');
+
+      if (filtered.length === 0) {
+        tbody.classList.add('hidden');
+        empty.classList.remove('hidden');
+        return;
+      }
+      tbody.classList.remove('hidden');
+      empty.classList.add('hidden');
+
+      tbody.innerHTML = filtered.map(wo => {
+        const progress = Math.round((wo.completedQty / wo.targetQty) * 100);
+        const yieldRate = wo.completedQty > 0 ? ((wo.warehouseQty / wo.inputQty) * 100).toFixed(1) : '—';
+        const lineName = lineData[wo.line]?.name || wo.line;
+
+        let progressColor = '#FF8400';
+        if (progress >= 100) progressColor = '#004D1A';
+        else if (progress < 50) progressColor = '#8C1C00';
+
+        let statusBadge = '';
+        if (wo.status === 'completed') {
+          statusBadge = '<span class="inline-block px-2 py-0.5 text-[11px] font-medium rounded bg-success text-success-foreground">已完工</span>';
+        } else if (progress >= 80) {
+          statusBadge = '<span class="inline-block px-2 py-0.5 text-[11px] font-medium rounded bg-info text-info-foreground">生產中</span>';
+        } else {
+          statusBadge = '<span class="inline-block px-2 py-0.5 text-[11px] font-medium rounded bg-warning text-warning-foreground">進行中</span>';
+        }
+
+        let yieldColor = 'text-foreground';
+        const yieldNum = parseFloat(yieldRate);
+        if (!isNaN(yieldNum)) {
+          yieldColor = yieldNum >= 96 ? 'text-success-foreground' : yieldNum >= 90 ? 'text-warning-foreground' : 'text-error-foreground';
+        }
+
+        return `
+          <div class="wo-row grid grid-cols-12 gap-4 px-6 py-3 border-b border-border items-center text-sm animate-fade-in">
+            <div class="col-span-2 font-primary text-[13px] font-medium text-foreground">${wo.id}</div>
+            <div class="col-span-1 text-muted-foreground">${lineName}</div>
+            <div class="col-span-2 text-foreground">${wo.process}</div>
+            <div class="col-span-1 text-right font-primary text-[13px] text-muted-foreground">${wo.inputQty.toLocaleString()}</div>
+            <div class="col-span-1 text-right font-primary text-[13px] text-foreground">${wo.completedQty.toLocaleString()}</div>
+            <div class="col-span-1 text-right font-primary text-[13px] text-foreground">${wo.warehouseQty.toLocaleString()}</div>
+            <div class="col-span-1 text-right font-primary text-[13px] font-medium ${yieldColor}">${yieldRate}%</div>
+            <div class="col-span-2 flex items-center gap-2">
+              <div class="wo-progress flex-1">
+                <div class="wo-progress-fill" style="width: ${progress}%; background-color: ${progressColor}"></div>
+              </div>
+              <span class="font-primary text-[11px] text-muted-foreground w-8 text-right">${progress}%</span>
+            </div>
+            <div class="col-span-1 text-right">${statusBadge}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateAll() {
+      updateMetrics();
+      updateChart();
+      updateDowntime();
+      renderWorkOrders();
+    }
+
+    // ============ INIT ============
+    init();
+    function init() {
+      updateAll();
+    }
+  </script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>溫度校正設定 - IFDCS</title>
+  <title>電壓校正設定 - IFDCS</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -109,7 +109,7 @@
 <body class="h-full bg-background font-secondary">
   <div class="flex h-full w-full">
     <!-- Sidebar -->
-    <aside id="sidebar" class="flex flex-col w-[280px] h-full bg-sidebar border-r border-border" data-active="溫度監控"></aside>
+    <aside id="sidebar" class="flex flex-col w-[280px] h-full bg-sidebar border-r border-border" data-active="電壓監控"></aside>
     <script src="sidebar.js"></script>
 
     <!-- Main Content -->
@@ -121,7 +121,7 @@
           <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
           <a href="#" class="text-sm text-muted-foreground hover:text-foreground transition-colors">宜蘭廠區</a>
           <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
-          <a href="temperature_monitor.html" class="text-sm text-muted-foreground hover:text-foreground transition-colors">溫度監控</a>
+          <a href="voltage_monitor.html" class="text-sm text-muted-foreground hover:text-foreground transition-colors">電壓監控</a>
           <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
           <span class="text-sm text-foreground">校正設定</span>
         </nav>
@@ -141,13 +141,13 @@
         <div class="flex flex-col gap-8 p-8 bg-card border border-border rounded shadow-sm">
           <!-- Page Header -->
           <div class="flex flex-col gap-3">
-            <a href="temperature_monitor_single.html" class="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+            <a href="voltage_monitor_single.html" class="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
               <span class="material-symbols-sharp icon-20">arrow_back</span>
-              <span class="text-sm">返回溫度監控</span>
+              <span class="text-sm">返回電壓監控</span>
             </a>
             <div class="flex flex-col gap-2">
-              <h1 class="font-primary text-[32px] font-semibold text-foreground">溫度校正設定</h1>
-              <p class="text-sm text-muted-foreground">請輸入 5 個測量點的數值及對應的真實溫度，系統將自動計算校正公式</p>
+              <h1 class="font-primary text-[32px] font-semibold text-foreground">電壓校正設定</h1>
+              <p class="text-sm text-muted-foreground">請輸入 5 個測量點的數值及對應的真實電壓，系統將自動計算校正公式</p>
             </div>
           </div>
 
@@ -171,7 +171,7 @@
 
             <!-- Device Selector -->
             <div class="flex flex-col gap-3 flex-1">
-              <label class="font-primary text-base font-semibold text-foreground">選擇溫度裝置</label>
+              <label class="font-primary text-base font-semibold text-foreground">選擇電壓裝置</label>
               <div class="dropdown" id="device-dropdown">
                 <button class="flex items-center justify-between w-full h-12 px-4 bg-muted border border-border rounded" onclick="toggleDropdown('device-dropdown')">
                   <span id="device-selected" class="text-sm text-foreground">裝置 A1</span>
@@ -196,18 +196,18 @@
               <!-- Table Header -->
               <div class="flex items-center py-3 border-b border-border">
                 <span class="w-20 text-xs font-medium text-muted-foreground">測量點</span>
-                <span class="flex-1 text-xs font-medium text-muted-foreground">測量值 (°C)</span>
-                <span class="flex-1 text-xs font-medium text-muted-foreground">真實值 (°C)</span>
+                <span class="flex-1 text-xs font-medium text-muted-foreground">測量值 (V)</span>
+                <span class="flex-1 text-xs font-medium text-muted-foreground">真實值 (V)</span>
               </div>
 
               <!-- Row 1 -->
               <div class="flex items-center py-3.5 border-b border-border">
                 <span class="w-20 text-sm font-medium text-foreground">點 1</span>
                 <div class="flex-1 pr-4">
-                  <input type="number" step="0.1" value="20.0" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="0" data-type="measured">
+                  <input type="number" step="0.1" value="200.0" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="0" data-type="measured">
                 </div>
                 <div class="flex-1">
-                  <input type="number" step="0.1" value="19.8" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="0" data-type="actual">
+                  <input type="number" step="0.1" value="199.5" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="0" data-type="actual">
                 </div>
               </div>
 
@@ -215,10 +215,10 @@
               <div class="flex items-center py-3.5 border-b border-border">
                 <span class="w-20 text-sm font-medium text-foreground">點 2</span>
                 <div class="flex-1 pr-4">
-                  <input type="number" step="0.1" value="25.0" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="1" data-type="measured">
+                  <input type="number" step="0.1" value="210.0" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="1" data-type="measured">
                 </div>
                 <div class="flex-1">
-                  <input type="number" step="0.1" value="24.7" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="1" data-type="actual">
+                  <input type="number" step="0.1" value="209.3" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="1" data-type="actual">
                 </div>
               </div>
 
@@ -226,10 +226,10 @@
               <div class="flex items-center py-3.5 border-b border-border">
                 <span class="w-20 text-sm font-medium text-foreground">點 3</span>
                 <div class="flex-1 pr-4">
-                  <input type="number" step="0.1" value="30.0" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="2" data-type="measured">
+                  <input type="number" step="0.1" value="220.0" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="2" data-type="measured">
                 </div>
                 <div class="flex-1">
-                  <input type="number" step="0.1" value="29.5" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="2" data-type="actual">
+                  <input type="number" step="0.1" value="219.2" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="2" data-type="actual">
                 </div>
               </div>
 
@@ -237,10 +237,10 @@
               <div class="flex items-center py-3.5 border-b border-border">
                 <span class="w-20 text-sm font-medium text-foreground">點 4</span>
                 <div class="flex-1 pr-4">
-                  <input type="number" step="0.1" value="35.0" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="3" data-type="measured">
+                  <input type="number" step="0.1" value="230.0" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="3" data-type="measured">
                 </div>
                 <div class="flex-1">
-                  <input type="number" step="0.1" value="34.3" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="3" data-type="actual">
+                  <input type="number" step="0.1" value="229.0" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="3" data-type="actual">
                 </div>
               </div>
 
@@ -248,10 +248,10 @@
               <div class="flex items-center py-3.5">
                 <span class="w-20 text-sm font-medium text-foreground">點 5</span>
                 <div class="flex-1 pr-4">
-                  <input type="number" step="0.1" value="40.0" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="4" data-type="measured">
+                  <input type="number" step="0.1" value="240.0" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="4" data-type="measured">
                 </div>
                 <div class="flex-1">
-                  <input type="number" step="0.1" value="39.1" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="4" data-type="actual">
+                  <input type="number" step="0.1" value="238.8" class="calibration-input w-full h-10 px-3 bg-muted border border-border rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" data-index="4" data-type="actual">
                 </div>
               </div>
             </div>
@@ -269,36 +269,36 @@
                 <div class="flex items-center gap-2">
                   <span class="text-sm text-success-foreground">校正公式:</span>
                   <span class="font-primary text-lg font-bold text-success-foreground">y = </span>
-                  <span id="slope-value" class="font-primary text-lg font-bold text-success-foreground animate-count">0.9730</span>
+                  <span id="slope-value" class="font-primary text-lg font-bold text-success-foreground animate-count">0.9825</span>
                   <span class="font-primary text-lg font-bold text-success-foreground"> x + </span>
-                  <span id="intercept-value" class="font-primary text-lg font-bold text-success-foreground animate-count">-0.2700</span>
+                  <span id="intercept-value" class="font-primary text-lg font-bold text-success-foreground animate-count">-0.9500</span>
                 </div>
               </div>
               <!-- Statistics -->
               <div class="flex items-center gap-6 text-sm">
                 <div class="flex items-center gap-2">
                   <span class="text-success-foreground/80">斜率 (a):</span>
-                  <span id="slope-display" class="font-primary font-semibold text-success-foreground">0.9730</span>
+                  <span id="slope-display" class="font-primary font-semibold text-success-foreground">0.9825</span>
                 </div>
                 <div class="flex items-center gap-2">
                   <span class="text-success-foreground/80">截距 (b):</span>
-                  <span id="intercept-display" class="font-primary font-semibold text-success-foreground">-0.2700</span>
+                  <span id="intercept-display" class="font-primary font-semibold text-success-foreground">-0.9500</span>
                 </div>
                 <div class="flex items-center gap-2">
                   <span class="text-success-foreground/80">R² 值:</span>
-                  <span id="r-squared" class="font-primary font-semibold text-success-foreground">0.9998</span>
+                  <span id="r-squared" class="font-primary font-semibold text-success-foreground">0.9999</span>
                 </div>
               </div>
               <!-- Meaning explanation -->
               <p class="text-[13px] text-success-foreground/90 leading-relaxed">
-                校正後溫度 = <span class="font-primary">a</span> × 測量溫度 + <span class="font-primary">b</span>
+                校正後電壓 = <span class="font-primary">a</span> × 測量電壓 + <span class="font-primary">b</span>
               </p>
             </div>
           </div>
 
           <!-- Action Buttons -->
           <div class="flex items-center justify-end gap-3 pt-6">
-            <a href="temperature_monitor_single.html" class="flex items-center justify-center px-6 py-3 border border-border rounded-full text-sm font-medium text-foreground hover:bg-muted transition-colors">
+            <a href="voltage_monitor_single.html" class="flex items-center justify-center px-6 py-3 border border-border rounded-full text-sm font-medium text-foreground hover:bg-muted transition-colors">
               取消
             </a>
             <button id="save-btn" class="flex items-center gap-2 px-6 py-3 bg-primary rounded-full hover:opacity-90 transition-opacity">
@@ -315,7 +315,7 @@
             <span class="text-sm font-semibold text-info-foreground">校正說明</span>
           </div>
           <p class="text-[13px] text-info-foreground leading-relaxed">
-            系統將使用最小二乘法計算校正公式 <span class="font-primary font-semibold">y = ax + b</span>。其中 <span class="font-primary">a</span> 為斜率，<span class="font-primary">b</span> 為截距。輸入的數據點越準確且分佈越均勻，校正效果越好。完成校正後，所有該設備的溫度讀數將自動套用校正公式。
+            系統將使用最小二乘法計算校正公式 <span class="font-primary font-semibold">y = ax + b</span>。其中 <span class="font-primary">a</span> 為斜率，<span class="font-primary">b</span> 為截距。輸入的數據點越準確且分佈越均勻，校正效果越好。完成校正後，所有該設備的電壓讀數將自動套用校正公式。
           </p>
         </div>
       </div>
@@ -355,11 +355,11 @@
     let currentLine = 'line1';
     let currentDevice = productionLines.line1.devices[0];
     let calibrationPoints = [
-      { measured: 20.0, actual: 19.8 },
-      { measured: 25.0, actual: 24.7 },
-      { measured: 30.0, actual: 29.5 },
-      { measured: 35.0, actual: 34.3 },
-      { measured: 40.0, actual: 39.1 },
+      { measured: 200.0, actual: 199.5 },
+      { measured: 210.0, actual: 209.3 },
+      { measured: 220.0, actual: 219.2 },
+      { measured: 230.0, actual: 229.0 },
+      { measured: 240.0, actual: 238.8 },
     ];
 
     // ============ DROPDOWN FUNCTIONS ============
@@ -376,14 +376,10 @@
       currentLine = value;
       document.getElementById('line-selected').textContent = productionLines[value].name;
 
-      // Update selected state
       document.querySelectorAll('#line-menu .dropdown-item').forEach(item => item.classList.remove('selected'));
       el.classList.add('selected');
 
-      // Update devices dropdown
       populateDevices();
-
-      // Select first device
       const firstDevice = productionLines[value].devices[0];
       selectDevice(firstDevice.id);
 
@@ -414,7 +410,6 @@
       });
     }
 
-    // Close dropdowns when clicking outside
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.dropdown')) {
         document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('open'));
@@ -423,7 +418,6 @@
 
     // ============ CALIBRATION CALCULATION ============
     function calculateCalibration() {
-      // Collect current values from inputs
       const inputs = document.querySelectorAll('.calibration-input');
       inputs.forEach(input => {
         const index = parseInt(input.dataset.index);
@@ -432,7 +426,6 @@
         calibrationPoints[index][type] = value;
       });
 
-      // Filter out incomplete points
       const validPoints = calibrationPoints.filter(p => !isNaN(p.measured) && !isNaN(p.actual));
 
       if (validPoints.length < 2) {
@@ -444,8 +437,6 @@
         return;
       }
 
-      // Calculate least squares linear regression: y = ax + b
-      // Where x = measured, y = actual
       const n = validPoints.length;
       let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
 
@@ -462,7 +453,6 @@
       const slope = (n * sumXY - sumX * sumY) / denominator;
       const intercept = (sumY - slope * sumX) / n;
 
-      // Calculate R-squared
       const meanY = sumY / n;
       let ssTot = 0, ssRes = 0;
 
@@ -474,14 +464,12 @@
 
       const rSquared = ssTot > 0 ? 1 - (ssRes / ssTot) : 0;
 
-      // Update display with animation
       updateValueWithAnimation('slope-value', slope.toFixed(4));
       updateValueWithAnimation('intercept-value', intercept >= 0 ? intercept.toFixed(4) : intercept.toFixed(4));
       document.getElementById('slope-display').textContent = slope.toFixed(4);
       document.getElementById('intercept-display').textContent = intercept.toFixed(4);
       document.getElementById('r-squared').textContent = rSquared.toFixed(4);
 
-      // Update the formula display to show + or - correctly
       const formulaIntercept = document.getElementById('intercept-value');
       const interceptSign = formulaIntercept.previousElementSibling;
       if (intercept >= 0) {
@@ -490,7 +478,6 @@
         interceptSign.textContent = ' x ';
       }
 
-      // Flash the result section
       const resultSection = document.getElementById('calibration-result');
       resultSection.classList.add('animate-pulse-success');
       setTimeout(() => resultSection.classList.remove('animate-pulse-success'), 600);
@@ -499,7 +486,7 @@
     function updateValueWithAnimation(elementId, newValue) {
       const el = document.getElementById(elementId);
       el.classList.remove('animate-count');
-      void el.offsetWidth; // Trigger reflow
+      void el.offsetWidth;
       el.textContent = newValue;
       el.classList.add('animate-count');
     }
@@ -507,7 +494,6 @@
     // ============ INPUT EVENT LISTENERS ============
     document.querySelectorAll('.calibration-input').forEach(input => {
       input.addEventListener('input', () => {
-        // Debounce the calculation
         clearTimeout(input.calcTimeout);
         input.calcTimeout = setTimeout(calculateCalibration, 200);
       });
@@ -529,13 +515,12 @@
       const deviceName = currentDevice.name;
       const lineName = productionLines[currentLine].name;
 
-      // Show success message
       alert(
         `校正參數已儲存！\n\n` +
         `裝置: ${lineName} - ${deviceName}\n` +
         `校正公式: y = ${slopeText} × x + ${interceptText}\n` +
         `R² = ${rSquaredText}\n\n` +
-        `所有該設備的溫度讀數將自動套用此校正公式。`
+        `所有該設備的電壓讀數將自動套用此校正公式。`
       );
     });
 

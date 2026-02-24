@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>戰情中心 - IFDCS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@24,100,0,0" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'primary': ['JetBrains Mono', 'monospace'],
+            'secondary': ['Geist', 'sans-serif'],
+          },
+          colors: {
+            'background': '#F2F3F0',
+            'foreground': '#111111',
+            'card': '#FFFFFF',
+            'card-foreground': '#111111',
+            'border': '#CBCCC9',
+            'muted': '#F2F3F0',
+            'muted-foreground': '#666666',
+            'primary': '#FF8400',
+            'primary-foreground': '#111111',
+            'secondary': '#E7E8E5',
+            'secondary-foreground': '#111111',
+            'sidebar': '#E7E8E5',
+            'sidebar-accent': '#CBCCC9',
+            'sidebar-foreground': '#666666',
+            'sidebar-primary': '#18181b',
+            'error': '#E5DCDA',
+            'error-foreground': '#8C1C00',
+            'warning': '#E9E3D8',
+            'warning-foreground': '#804200',
+            'success': '#DFE6E1',
+            'success-foreground': '#004D1A',
+            'info': '#DFDFE6',
+            'info-foreground': '#000066',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .material-symbols-sharp {
+      font-family: 'Material Symbols Sharp';
+      font-weight: 100;
+      font-style: normal;
+      font-size: 24px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-smoothing: antialiased;
+    }
+    .icon-20 { font-size: 20px; }
+    .icon-14 { font-size: 14px; }
+    .icon-16 { font-size: 16px; }
+
+    /* Card hover effect */
+    .kpi-card {
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    .animate-pulse-slow { animation: pulse 2s ease-in-out infinite; }
+  </style>
+</head>
+<body class="h-full bg-background font-secondary">
+  <div class="flex h-full w-full">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="flex flex-col w-[280px] h-full bg-sidebar border-r border-border" data-active="戰情中心"></aside>
+    <script src="sidebar.js"></script>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full">
+      <!-- Top Bar -->
+      <header class="flex items-center justify-between h-16 px-8 bg-card border-b border-border">
+        <nav class="flex items-center gap-2">
+          <a href="#" class="text-sm text-muted-foreground hover:text-foreground transition-colors">總部</a>
+          <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
+          <a href="#" class="text-sm text-muted-foreground hover:text-foreground transition-colors">宜蘭廠區</a>
+          <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
+          <span class="text-sm text-foreground">戰情中心</span>
+        </nav>
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2 px-3 py-1.5 bg-success rounded">
+            <div class="w-2 h-2 rounded-full bg-success-foreground animate-pulse-slow"></div>
+            <span class="text-xs font-medium text-success-foreground">系統運作正常</span>
+          </div>
+          <button class="flex items-center gap-1.5 h-10 px-4 rounded-full">
+            <span class="font-primary text-sm font-medium text-foreground">中文</span>
+          </button>
+          <div class="flex items-center justify-center w-10 h-10 rounded-full bg-secondary">
+            <span class="font-primary text-sm font-semibold text-foreground">管</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <div class="flex-1 flex flex-col gap-6 p-8 overflow-auto">
+        <!-- Page Header -->
+        <div class="flex items-center justify-between">
+          <div class="flex flex-col gap-2">
+            <h1 class="font-primary text-[32px] font-semibold text-foreground">戰情中心</h1>
+            <p class="text-sm text-muted-foreground">宜蘭廠區即時生產與能源監控總覽</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span id="current-time" class="font-primary text-sm text-muted-foreground"></span>
+            <button id="refresh-btn" class="flex items-center gap-2 px-[18px] py-2.5 text-muted-foreground hover:bg-muted rounded transition-colors">
+              <span class="material-symbols-sharp icon-20">refresh</span>
+              <span class="text-sm">刷新</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI Cards Row 1 -->
+        <div class="grid grid-cols-4 gap-4">
+          <!-- Total Power -->
+          <a href="energy-monitor.html" class="kpi-card flex flex-col gap-3 p-6 bg-card border border-border rounded shadow-sm">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center justify-center w-10 h-10 bg-primary/20 rounded">
+                <span class="material-symbols-sharp text-primary">bolt</span>
+              </div>
+              <span class="material-symbols-sharp icon-16 text-muted-foreground">arrow_forward</span>
+            </div>
+            <span class="text-[13px] text-muted-foreground">即時總功率</span>
+            <div class="flex items-end gap-2">
+              <span id="kpi-power" class="font-primary text-[28px] font-semibold text-foreground">1,250</span>
+              <span class="text-sm text-muted-foreground mb-1">kW</span>
+            </div>
+          </a>
+
+          <!-- Today Energy -->
+          <a href="energy-monitor.html" class="kpi-card flex flex-col gap-3 p-6 bg-card border border-border rounded shadow-sm">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center justify-center w-10 h-10 bg-info rounded">
+                <span class="material-symbols-sharp text-info-foreground">electric_meter</span>
+              </div>
+              <span class="material-symbols-sharp icon-16 text-muted-foreground">arrow_forward</span>
+            </div>
+            <span class="text-[13px] text-muted-foreground">今日累計用電</span>
+            <div class="flex items-end gap-2">
+              <span id="kpi-energy" class="font-primary text-[28px] font-semibold text-foreground">18,720</span>
+              <span class="text-sm text-muted-foreground mb-1">kWh</span>
+            </div>
+          </a>
+
+          <!-- Average Temperature -->
+          <a href="temperature_monitor.html" class="kpi-card flex flex-col gap-3 p-6 bg-card border border-border rounded shadow-sm">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center justify-center w-10 h-10 bg-warning rounded">
+                <span class="material-symbols-sharp text-warning-foreground">thermostat</span>
+              </div>
+              <span class="material-symbols-sharp icon-16 text-muted-foreground">arrow_forward</span>
+            </div>
+            <span class="text-[13px] text-muted-foreground">平均環境溫度</span>
+            <div class="flex items-end gap-2">
+              <span id="kpi-temp" class="font-primary text-[28px] font-semibold text-foreground">25.8</span>
+              <span class="text-sm text-muted-foreground mb-1">°C</span>
+            </div>
+          </a>
+
+          <!-- Production Output -->
+          <div class="kpi-card flex flex-col gap-3 p-6 bg-card border border-border rounded shadow-sm">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center justify-center w-10 h-10 bg-success rounded">
+                <span class="material-symbols-sharp text-success-foreground">inventory_2</span>
+              </div>
+            </div>
+            <span class="text-[13px] text-muted-foreground">今日產出</span>
+            <div class="flex items-end gap-2">
+              <span id="kpi-output" class="font-primary text-[28px] font-semibold text-foreground">6,580</span>
+              <span class="text-sm text-muted-foreground mb-1">件</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="flex-1 grid grid-cols-3 gap-4 min-h-0">
+          <!-- Left Column: Alerts & Status -->
+          <div class="flex flex-col gap-4">
+            <!-- Alert Summary -->
+            <div class="flex flex-col gap-4 p-6 bg-card border border-border rounded shadow-sm">
+              <div class="flex items-center justify-between">
+                <span class="font-primary text-base font-semibold text-foreground">異常警報</span>
+                <span class="px-2 py-1 rounded bg-error text-xs font-medium text-error-foreground">2 項待處理</span>
+              </div>
+              <div class="flex flex-col gap-2">
+                <a href="alerts.html" class="flex items-center gap-3 p-3 bg-error rounded hover:opacity-80 transition-opacity cursor-pointer">
+                  <span class="material-symbols-sharp icon-20 text-error-foreground">warning</span>
+                  <div class="flex-1">
+                    <p class="text-sm font-medium text-error-foreground">裝置 C4 溫度過高</p>
+                    <p class="text-xs text-error-foreground/80">27.2°C (上限 28°C)</p>
+                  </div>
+                  <span class="text-xs text-error-foreground/60">5分鐘前</span>
+                </a>
+                <a href="alerts.html" class="flex items-center gap-3 p-3 bg-warning rounded hover:opacity-80 transition-opacity cursor-pointer">
+                  <span class="material-symbols-sharp icon-20 text-warning-foreground">info</span>
+                  <div class="flex-1">
+                    <p class="text-sm font-medium text-warning-foreground">CNC-05 負載率偏高</p>
+                    <p class="text-xs text-warning-foreground/80">負載率 95%</p>
+                  </div>
+                  <span class="text-xs text-warning-foreground/60">12分鐘前</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Production Lines Status -->
+            <div class="flex-1 flex flex-col gap-4 p-6 bg-card border border-border rounded shadow-sm">
+              <span class="font-primary text-base font-semibold text-foreground">產線狀態</span>
+              <div class="flex flex-col gap-3">
+                <div class="flex items-center justify-between p-3 bg-muted rounded cursor-pointer hover:bg-sidebar-accent transition-colors" onclick="showLineDetail('line1')">
+                  <div class="flex items-center gap-3">
+                    <div class="w-2 h-2 rounded-full bg-success-foreground"></div>
+                    <span class="text-sm font-medium text-foreground">產線 1</span>
+                  </div>
+                  <div class="flex items-center gap-4">
+                    <span class="text-xs text-muted-foreground">稼動率</span>
+                    <span class="font-primary text-sm font-semibold text-success-foreground">92%</span>
+                    <span class="material-symbols-sharp icon-16 text-muted-foreground">chevron_right</span>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-muted rounded cursor-pointer hover:bg-sidebar-accent transition-colors" onclick="showLineDetail('line2')">
+                  <div class="flex items-center gap-3">
+                    <div class="w-2 h-2 rounded-full bg-success-foreground"></div>
+                    <span class="text-sm font-medium text-foreground">產線 2</span>
+                  </div>
+                  <div class="flex items-center gap-4">
+                    <span class="text-xs text-muted-foreground">稼動率</span>
+                    <span class="font-primary text-sm font-semibold text-success-foreground">88%</span>
+                    <span class="material-symbols-sharp icon-16 text-muted-foreground">chevron_right</span>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-muted rounded cursor-pointer hover:bg-sidebar-accent transition-colors" onclick="showLineDetail('line3')">
+                  <div class="flex items-center gap-3">
+                    <div class="w-2 h-2 rounded-full bg-warning-foreground"></div>
+                    <span class="text-sm font-medium text-foreground">產線 3</span>
+                  </div>
+                  <div class="flex items-center gap-4">
+                    <span class="text-xs text-muted-foreground">稼動率</span>
+                    <span class="font-primary text-sm font-semibold text-warning-foreground">76%</span>
+                    <span class="material-symbols-sharp icon-16 text-muted-foreground">chevron_right</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Middle Column: Power Chart -->
+          <div class="flex flex-col gap-4 p-6 bg-card border border-border rounded shadow-sm">
+            <div class="flex items-center justify-between">
+              <span class="font-primary text-base font-semibold text-foreground">24 小時功率趨勢</span>
+              <a href="energy-monitor.html" class="text-xs text-primary hover:underline">查看詳情</a>
+            </div>
+            <div class="flex-1 flex flex-col justify-end gap-2 min-h-[200px]">
+              <div class="flex-1 flex gap-1">
+                <!-- Y-axis labels -->
+                <div class="flex flex-col justify-between items-end pr-1 py-0">
+                  <span class="text-[10px] text-muted-foreground">1,500</span>
+                  <span class="text-[10px] text-muted-foreground">1,200</span>
+                  <span class="text-[10px] text-muted-foreground">900</span>
+                  <span class="text-[10px] text-muted-foreground">600</span>
+                  <span class="text-[10px] text-muted-foreground">300</span>
+                  <span class="text-[10px] text-muted-foreground font-primary">kW</span>
+                </div>
+                <!-- Bars -->
+                <div class="flex-1 flex items-end justify-between gap-1 border-l border-border pl-1">
+                  <div class="w-full rounded-t bg-primary/30" style="height: 40%"></div>
+                  <div class="w-full rounded-t bg-primary/30" style="height: 30%"></div>
+                  <div class="w-full rounded-t bg-primary/30" style="height: 25%"></div>
+                  <div class="w-full rounded-t bg-primary/30" style="height: 35%"></div>
+                  <div class="w-full rounded-t bg-primary/40" style="height: 50%"></div>
+                  <div class="w-full rounded-t bg-primary/60" style="height: 70%"></div>
+                  <div class="w-full rounded-t bg-primary/80" style="height: 85%"></div>
+                  <div class="w-full rounded-t bg-primary" style="height: 95%"></div>
+                  <div class="w-full rounded-t bg-primary" style="height: 100%"></div>
+                  <div class="w-full rounded-t bg-primary" style="height: 92%"></div>
+                  <div class="w-full rounded-t bg-primary" style="height: 88%"></div>
+                  <div class="w-full rounded-t bg-primary" style="height: 94%"></div>
+                  <div class="w-full rounded-t bg-secondary" style="height: 85%"></div>
+                  <div class="w-full rounded-t bg-secondary" style="height: 78%"></div>
+                </div>
+              </div>
+              <div class="flex justify-between pl-10 pt-2 border-t border-border">
+                <span class="text-[10px] text-muted-foreground">00:00</span>
+                <span class="text-[10px] text-muted-foreground">06:00</span>
+                <span class="text-[10px] text-muted-foreground">12:00</span>
+                <span class="text-[10px] text-muted-foreground">18:00</span>
+                <span class="text-[10px] text-muted-foreground">24:00</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-6 pt-2">
+              <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded bg-primary"></div>
+                <span class="text-xs text-muted-foreground">實際功率</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded bg-secondary"></div>
+                <span class="text-xs text-muted-foreground">預測功率</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Temperature & Carbon -->
+          <div class="flex flex-col gap-4">
+            <!-- Temperature Overview -->
+            <a href="temperature_monitor.html" class="kpi-card flex flex-col gap-4 p-6 bg-card border border-border rounded shadow-sm">
+              <div class="flex items-center justify-between">
+                <span class="font-primary text-base font-semibold text-foreground">溫度監控總覽</span>
+                <span class="material-symbols-sharp icon-16 text-muted-foreground">arrow_forward</span>
+              </div>
+              <div class="grid grid-cols-3 gap-4">
+                <div class="flex flex-col gap-1 items-center p-3 bg-muted rounded">
+                  <span class="text-xs text-muted-foreground">監控裝置</span>
+                  <span class="font-primary text-xl font-semibold text-foreground">9</span>
+                </div>
+                <div class="flex flex-col gap-1 items-center p-3 bg-success rounded">
+                  <span class="text-xs text-success-foreground">正常</span>
+                  <span class="font-primary text-xl font-semibold text-success-foreground">7</span>
+                </div>
+                <div class="flex flex-col gap-1 items-center p-3 bg-warning rounded">
+                  <span class="text-xs text-warning-foreground">警告</span>
+                  <span class="font-primary text-xl font-semibold text-warning-foreground">2</span>
+                </div>
+              </div>
+            </a>
+
+            <!-- Carbon Emission -->
+            <div class="flex flex-col gap-4 p-6 bg-card border border-border rounded shadow-sm">
+              <div class="flex items-center justify-between">
+                <span class="font-primary text-base font-semibold text-foreground">碳排放</span>
+                <span class="text-xs text-muted-foreground">本月累計</span>
+              </div>
+              <div class="flex items-end gap-2">
+                <span class="font-primary text-[32px] font-semibold text-foreground">128.5</span>
+                <span class="text-sm text-muted-foreground mb-1">噸 CO₂e</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-sharp icon-16 text-success-foreground">trending_down</span>
+                <span class="text-sm text-success-foreground">較上月減少 8.2%</span>
+              </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="flex-1 flex flex-col gap-4 p-6 bg-card border border-border rounded shadow-sm">
+              <span class="font-primary text-base font-semibold text-foreground">生產效率</span>
+              <div class="flex flex-col gap-3">
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-muted-foreground">良率 (FPY)</span>
+                  <span class="font-primary text-sm font-semibold text-success-foreground">98.5%</span>
+                </div>
+                <div class="w-full h-2 bg-muted rounded-full overflow-hidden">
+                  <div class="h-full bg-success-foreground rounded-full" style="width: 98.5%"></div>
+                </div>
+                <div class="flex items-center justify-between pt-2">
+                  <span class="text-sm text-muted-foreground">設備稼動率</span>
+                  <span class="font-primary text-sm font-semibold text-foreground">85.3%</span>
+                </div>
+                <div class="w-full h-2 bg-muted rounded-full overflow-hidden">
+                  <div class="h-full bg-primary rounded-full" style="width: 85.3%"></div>
+                </div>
+                <div class="flex items-center justify-between pt-2">
+                  <span class="text-sm text-muted-foreground">UPH 達成率</span>
+                  <span class="font-primary text-sm font-semibold text-foreground">92.1%</span>
+                </div>
+                <div class="w-full h-2 bg-muted rounded-full overflow-hidden">
+                  <div class="h-full bg-info-foreground rounded-full" style="width: 92.1%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Production Line Detail Modal -->
+  <div id="line-detail-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 hidden" onclick="if(event.target===this)closeLineDetail()">
+    <div class="bg-card rounded-lg border border-border shadow-lg w-[480px] max-h-[80vh] overflow-auto animate-fade-in">
+      <div class="flex items-center justify-between p-6 border-b border-border">
+        <div class="flex items-center gap-3">
+          <div id="modal-status-dot" class="w-2.5 h-2.5 rounded-full"></div>
+          <span id="modal-line-name" class="font-primary text-lg font-semibold text-foreground"></span>
+        </div>
+        <button onclick="closeLineDetail()" class="flex items-center justify-center w-8 h-8 rounded hover:bg-muted transition-colors">
+          <span class="material-symbols-sharp icon-20 text-muted-foreground">close</span>
+        </button>
+      </div>
+      <div class="flex items-center justify-between px-6 py-4 bg-muted/50">
+        <span class="text-sm text-muted-foreground">產線稼動率</span>
+        <span id="modal-line-rate" class="font-primary text-lg font-semibold"></span>
+      </div>
+      <div class="p-6">
+        <span class="text-sm font-medium text-muted-foreground">裝置稼動率列表</span>
+        <div id="modal-device-list" class="flex flex-col gap-2 mt-3"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============ REAL-TIME CLOCK ============
+    function updateClock() {
+      const now = new Date();
+      const options = {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      };
+      document.getElementById('current-time').textContent = now.toLocaleString('zh-TW', options);
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // ============ SIMULATED DATA UPDATES ============
+    function updateKPIs() {
+      // Power (1200-1300 kW)
+      const power = 1200 + Math.floor(Math.random() * 100);
+      document.getElementById('kpi-power').textContent = power.toLocaleString();
+
+      // Energy (increases slowly)
+      const baseEnergy = 18720;
+      const energyIncrement = Math.floor((Date.now() % 3600000) / 3600000 * 50);
+      document.getElementById('kpi-energy').textContent = (baseEnergy + energyIncrement).toLocaleString();
+
+      // Temperature (24-27°C)
+      const temp = 24 + Math.random() * 3;
+      document.getElementById('kpi-temp').textContent = temp.toFixed(1);
+
+      // Output (increases)
+      const baseOutput = 6580;
+      const outputIncrement = Math.floor((Date.now() % 3600000) / 3600000 * 20);
+      document.getElementById('kpi-output').textContent = (baseOutput + outputIncrement).toLocaleString();
+    }
+
+    setInterval(updateKPIs, 5000);
+
+    // ============ PRODUCTION LINE DETAIL ============
+    const lineData = {
+      line1: {
+        name: '產線 1', rate: 92, status: 'success',
+        devices: [
+          { id: 'A1', name: '裝置 A1', rate: 95, status: 'normal' },
+          { id: 'A2', name: '裝置 A2', rate: 91, status: 'normal' },
+          { id: 'A3', name: '裝置 A3', rate: 89, status: 'normal' },
+        ]
+      },
+      line2: {
+        name: '產線 2', rate: 88, status: 'success',
+        devices: [
+          { id: 'B1', name: '裝置 B1', rate: 90, status: 'normal' },
+          { id: 'B2', name: '裝置 B2', rate: 86, status: 'normal' },
+        ]
+      },
+      line3: {
+        name: '產線 3', rate: 76, status: 'warning',
+        devices: [
+          { id: 'C1', name: '裝置 C1', rate: 88, status: 'normal' },
+          { id: 'C2', name: '裝置 C2', rate: 82, status: 'normal' },
+          { id: 'C3', name: '裝置 C3', rate: 72, status: 'warning' },
+          { id: 'C4', name: '裝置 C4', rate: 61, status: 'warning' },
+        ]
+      }
+    };
+
+    function showLineDetail(lineKey) {
+      const line = lineData[lineKey];
+      if (!line) return;
+      const modal = document.getElementById('line-detail-modal');
+      const dotColor = line.status === 'success' ? 'bg-success-foreground' : 'bg-warning-foreground';
+      const rateColor = line.status === 'success' ? 'text-success-foreground' : 'text-warning-foreground';
+
+      document.getElementById('modal-status-dot').className = `w-2.5 h-2.5 rounded-full ${dotColor}`;
+      document.getElementById('modal-line-name').textContent = line.name;
+      document.getElementById('modal-line-rate').className = `font-primary text-lg font-semibold ${rateColor}`;
+      document.getElementById('modal-line-rate').textContent = line.rate + '%';
+
+      const listEl = document.getElementById('modal-device-list');
+      listEl.innerHTML = line.devices.map(d => {
+        const dColor = d.rate >= 80 ? 'text-success-foreground' : 'text-warning-foreground';
+        const barColor = d.rate >= 80 ? 'bg-success-foreground' : 'bg-warning-foreground';
+        return `<div class="flex items-center gap-4 p-3 bg-muted rounded">
+          <span class="text-sm font-medium text-foreground w-20">${d.name}</span>
+          <div class="flex-1 h-2 bg-border rounded-full overflow-hidden">
+            <div class="${barColor} h-full rounded-full transition-all" style="width:${d.rate}%"></div>
+          </div>
+          <span class="font-primary text-sm font-semibold ${dColor} w-12 text-right">${d.rate}%</span>
+        </div>`;
+      }).join('');
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeLineDetail() {
+      document.getElementById('line-detail-modal').classList.add('hidden');
+    }
+
+    // ============ REFRESH BUTTON ============
+    document.getElementById('refresh-btn').addEventListener('click', () => {
+      updateKPIs();
+
+      const icon = document.querySelector('#refresh-btn .material-symbols-sharp');
+      icon.style.transition = 'transform 0.5s';
+      icon.style.transform = 'rotate(360deg)';
+      setTimeout(() => {
+        icon.style.transition = '';
+        icon.style.transform = '';
+      }, 500);
+    });
+  </script>
+</body>
+</html>

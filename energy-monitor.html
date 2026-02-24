@@ -63,66 +63,18 @@
 <body class="h-full bg-background font-secondary">
   <div class="flex h-full w-full">
     <!-- Sidebar -->
-    <aside class="flex flex-col w-[280px] h-full bg-sidebar border-r border-border">
-      <!-- Sidebar Header -->
-      <div class="flex items-center gap-2 h-[88px] px-8 py-6 border-b border-border">
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-          <path d="M16 0L32 16L16 32L0 16L16 0Z" fill="#FF8400"/>
-        </svg>
-        <span class="font-primary text-lg font-bold text-primary leading-none">IFDCS</span>
-      </div>
-
-      <!-- Sidebar Content -->
-      <nav class="flex-1 flex flex-col gap-6 px-4 py-6">
-        <span class="px-4 text-sm text-muted-foreground font-primary">主選單</span>
-
-        <div class="flex flex-col">
-          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
-            <span class="material-symbols-sharp">dashboard</span>
-            <span class="text-base">戰情中心</span>
-          </a>
-          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
-            <span class="material-symbols-sharp">eco</span>
-            <span class="text-base">碳盤查</span>
-          </a>
-          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full bg-sidebar-accent text-sidebar-primary">
-            <span class="material-symbols-sharp">bolt</span>
-            <span class="text-base">電力監控</span>
-          </a>
-          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
-            <span class="material-symbols-sharp">precision_manufacturing</span>
-            <span class="text-base">生產數據</span>
-          </a>
-          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
-            <span class="material-symbols-sharp">notifications</span>
-            <span class="text-base">異常通知</span>
-          </a>
-          <a href="#" class="flex items-center gap-4 px-4 py-3 rounded-full text-muted-foreground hover:bg-sidebar-accent transition-colors">
-            <span class="material-symbols-sharp">settings</span>
-            <span class="text-base">系統設定</span>
-          </a>
-        </div>
-      </nav>
-
-      <!-- Sidebar Footer -->
-      <div class="flex items-center gap-2 px-8 py-6">
-        <div class="flex-1 flex flex-col gap-1">
-          <span class="text-base text-sidebar-primary">系統管理員</span>
-          <span class="text-base text-muted-foreground">admin@factory.com</span>
-        </div>
-        <span class="material-symbols-sharp text-muted-foreground">keyboard_arrow_down</span>
-      </div>
-    </aside>
+    <aside id="sidebar" class="flex flex-col w-[280px] h-full bg-sidebar border-r border-border" data-active="電力監控"></aside>
+    <script src="sidebar.js"></script>
 
     <!-- Main Content -->
     <main class="flex-1 flex flex-col h-full">
       <!-- Top Bar -->
       <header class="flex items-center justify-between h-16 px-8 bg-card border-b border-border">
-        <nav class="flex items-center gap-4">
-          <span class="text-sm text-muted-foreground">台中廠區</span>
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M5.25 3.5L8.75 7L5.25 10.5" stroke="#666666" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+        <nav class="flex items-center gap-2">
+          <a href="#" class="text-sm text-muted-foreground hover:text-foreground transition-colors">總部</a>
+          <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
+          <a href="#" class="text-sm text-muted-foreground hover:text-foreground transition-colors">宜蘭廠區</a>
+          <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
           <span class="text-sm text-foreground">電力監控</span>
         </nav>
         <div class="flex items-center gap-4">

@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>異常告警中心 - IFDCS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@24,100,0,0" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'primary': ['JetBrains Mono', 'monospace'],
+            'secondary': ['Geist', 'sans-serif'],
+          },
+          colors: {
+            'background': '#F2F3F0',
+            'foreground': '#111111',
+            'card': '#FFFFFF',
+            'card-foreground': '#111111',
+            'border': '#CBCCC9',
+            'muted': '#F2F3F0',
+            'muted-foreground': '#666666',
+            'primary': '#FF8400',
+            'primary-foreground': '#111111',
+            'secondary': '#E7E8E5',
+            'secondary-foreground': '#111111',
+            'sidebar': '#E7E8E5',
+            'sidebar-accent': '#CBCCC9',
+            'sidebar-foreground': '#666666',
+            'sidebar-primary': '#18181b',
+            'error': '#E5DCDA',
+            'error-foreground': '#8C1C00',
+            'warning': '#E9E3D8',
+            'warning-foreground': '#804200',
+            'success': '#DFE6E1',
+            'success-foreground': '#004D1A',
+            'info': '#DFDFE6',
+            'info-foreground': '#000066',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .material-symbols-sharp {
+      font-family: 'Material Symbols Sharp';
+      font-weight: 100;
+      font-style: normal;
+      font-size: 24px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-smoothing: antialiased;
+    }
+    .icon-20 { font-size: 20px; }
+    .icon-14 { font-size: 14px; }
+
+    /* Dropdown styles */
+    .dropdown { position: relative; }
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      margin-top: 4px;
+      background: white;
+      border: 1px solid #CBCCC9;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      display: none;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .dropdown-menu.open { display: block; }
+    .dropdown-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.15s;
+    }
+    .dropdown-item:hover { background-color: #F2F3F0; }
+    .dropdown-item.selected { background-color: #FF840020; color: #FF8400; }
+
+    /* Filter panel */
+    .filter-panel {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      z-index: 50;
+      margin-top: 8px;
+      background: white;
+      border: 1px solid #CBCCC9;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      display: none;
+      width: 320px;
+    }
+    .filter-panel.open { display: block; }
+
+    /* Tab styles */
+    .tab-btn {
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .tab-btn.active {
+      background: white;
+      color: #111111;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+    .tab-btn:not(.active) {
+      color: #666666;
+    }
+    .tab-btn:not(.active):hover {
+      color: #111111;
+    }
+
+    /* Animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-slide-down { animation: slideDown 0.2s ease-out; }
+
+    /* Alert row hover */
+    .alert-row {
+      transition: background-color 0.15s;
+    }
+    .alert-row:hover {
+      background-color: #F2F3F0;
+    }
+    .alert-row.resolved {
+      opacity: 0.5;
+    }
+    .alert-row.resolved:hover {
+      opacity: 0.7;
+    }
+
+    /* Modal overlay */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open {
+      display: flex;
+    }
+  </style>
+</head>
+<body class="h-full bg-background font-secondary">
+  <div class="flex h-full w-full">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="flex flex-col w-[280px] h-full bg-sidebar border-r border-border" data-active="異常通知"></aside>
+    <script src="sidebar.js"></script>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full">
+      <!-- Top Bar -->
+      <header class="flex items-center justify-between h-16 px-8 bg-card border-b border-border">
+        <nav class="flex items-center gap-2">
+          <a href="#" class="text-sm text-muted-foreground hover:text-foreground transition-colors">總部</a>
+          <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
+          <a href="#" class="text-sm text-muted-foreground hover:text-foreground transition-colors">宜蘭廠區</a>
+          <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
+          <span class="text-sm text-foreground">異常告警</span>
+        </nav>
+        <div class="flex items-center gap-4">
+          <button class="flex items-center gap-1.5 h-10 px-4 rounded-full">
+            <span class="font-primary text-sm font-medium text-foreground">中文</span>
+          </button>
+          <div class="flex items-center justify-center w-10 h-10 rounded-full bg-secondary">
+            <span class="font-primary text-sm font-semibold text-foreground">管</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <div class="flex-1 flex flex-col gap-6 p-8 overflow-auto">
+        <!-- Page Header -->
+        <div class="flex items-center justify-between">
+          <div class="flex flex-col gap-1">
+            <h1 class="font-primary text-[28px] font-semibold text-foreground leading-tight">異常告警中心</h1>
+            <p class="text-sm text-muted-foreground">即時監控與歷史告警紀錄</p>
+          </div>
+          <div class="relative">
+            <button id="filter-btn" class="flex items-center gap-1.5 h-10 px-4 bg-background border border-border rounded-full shadow-sm hover:bg-muted transition-colors">
+              <span class="material-symbols-sharp icon-20 text-foreground">tune</span>
+              <span class="font-primary text-sm font-medium text-foreground">篩選</span>
+              <span id="filter-badge" class="hidden ml-1 px-1.5 py-0.5 text-[10px] font-semibold text-white bg-primary rounded-full">0</span>
+            </button>
+            <!-- Filter Panel -->
+            <div class="filter-panel" id="filter-panel">
+              <div class="p-4 border-b border-border">
+                <div class="flex items-center justify-between mb-4">
+                  <span class="text-sm font-semibold text-foreground">篩選條件</span>
+                  <button id="filter-reset" class="text-xs text-primary hover:underline">重置</button>
+                </div>
+
+                <!-- Severity Filter -->
+                <div class="flex flex-col gap-2 mb-4">
+                  <label class="text-[13px] font-medium text-foreground">告警等級</label>
+                  <div class="flex flex-wrap gap-2">
+                    <button class="severity-filter-btn px-3 py-1.5 text-xs font-medium rounded-full border border-border bg-muted text-muted-foreground transition-colors" data-value="all">全部</button>
+                    <button class="severity-filter-btn px-3 py-1.5 text-xs font-medium rounded-full border border-border bg-muted text-muted-foreground transition-colors" data-value="critical">嚴重</button>
+                    <button class="severity-filter-btn px-3 py-1.5 text-xs font-medium rounded-full border border-border bg-muted text-muted-foreground transition-colors" data-value="warning">警告</button>
+                    <button class="severity-filter-btn px-3 py-1.5 text-xs font-medium rounded-full border border-border bg-muted text-muted-foreground transition-colors" data-value="info">資訊</button>
+                  </div>
+                </div>
+
+                <!-- Source Filter -->
+                <div class="flex flex-col gap-2 mb-4">
+                  <label class="text-[13px] font-medium text-foreground">來源類型</label>
+                  <div class="dropdown" id="source-dropdown">
+                    <button class="flex items-center justify-between w-full h-10 px-3 bg-muted border border-border rounded text-sm" onclick="toggleDropdown('source-dropdown')">
+                      <span id="source-selected">全部來源</span>
+                      <span class="material-symbols-sharp icon-20 text-muted-foreground">keyboard_arrow_down</span>
+                    </button>
+                    <div class="dropdown-menu" id="source-menu">
+                      <div class="dropdown-item selected" data-value="all" onclick="selectSource(this)">全部來源</div>
+                      <div class="dropdown-item" data-value="temperature" onclick="selectSource(this)">溫度異常</div>
+                      <div class="dropdown-item" data-value="current" onclick="selectSource(this)">電流異常</div>
+                      <div class="dropdown-item" data-value="voltage" onclick="selectSource(this)">電壓異常</div>
+                      <div class="dropdown-item" data-value="power" onclick="selectSource(this)">用電異常</div>
+                      <div class="dropdown-item" data-value="equipment" onclick="selectSource(this)">設備通知</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Search -->
+                <div class="flex flex-col gap-2">
+                  <label class="text-[13px] font-medium text-foreground">搜尋</label>
+                  <div class="flex items-center h-10 px-3 bg-muted border border-border rounded">
+                    <span class="material-symbols-sharp icon-20 text-muted-foreground">search</span>
+                    <input type="text" id="search-input" placeholder="搜尋告警內容..." class="flex-1 ml-2 bg-transparent text-sm text-foreground placeholder-muted-foreground focus:outline-none">
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center justify-end gap-2 p-3">
+                <button id="filter-cancel" class="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">取消</button>
+                <button id="filter-apply" class="px-4 py-2 text-sm font-medium text-white bg-foreground rounded-full hover:opacity-90 transition-opacity">套用</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metrics Row -->
+        <div class="grid grid-cols-4 gap-4">
+          <div class="flex flex-col gap-2 p-6 bg-card border border-border rounded shadow-sm">
+            <span class="text-sm text-muted-foreground">嚴重告警</span>
+            <div class="flex items-end gap-2">
+              <span id="metric-critical" class="font-primary text-[32px] font-semibold text-error-foreground leading-tight">2</span>
+              <span class="text-sm text-muted-foreground mb-1">則待處理</span>
+            </div>
+          </div>
+          <div class="flex flex-col gap-2 p-6 bg-card border border-border rounded shadow-sm">
+            <span class="text-sm text-muted-foreground">警告通知</span>
+            <div class="flex items-end gap-2">
+              <span id="metric-warning" class="font-primary text-[32px] font-semibold text-warning-foreground leading-tight">5</span>
+              <span class="text-sm text-muted-foreground mb-1">則待處理</span>
+            </div>
+          </div>
+          <div class="flex flex-col gap-2 p-6 bg-card border border-border rounded shadow-sm">
+            <span class="text-sm text-muted-foreground">資訊通知</span>
+            <div class="flex items-end gap-2">
+              <span id="metric-info" class="font-primary text-[32px] font-semibold text-info-foreground leading-tight">12</span>
+              <span class="text-sm text-muted-foreground mb-1">則</span>
+            </div>
+          </div>
+          <div class="flex flex-col gap-2 p-6 bg-card border border-border rounded shadow-sm">
+            <span class="text-sm text-muted-foreground">今日已處理</span>
+            <div class="flex items-end gap-2">
+              <span id="metric-resolved" class="font-primary text-[32px] font-semibold text-success-foreground leading-tight">8</span>
+              <span class="text-sm text-muted-foreground mb-1">則</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alert List Card -->
+        <div class="flex flex-col bg-card border border-border rounded shadow-sm flex-1">
+          <!-- List Header -->
+          <div class="flex items-center justify-between px-6 py-4 border-b border-border">
+            <span class="font-primary text-base font-medium text-foreground">告警紀錄列表</span>
+            <div class="flex items-center bg-secondary rounded-full p-1">
+              <button class="tab-btn active" data-tab="all" onclick="switchTab(this)">全部</button>
+              <button class="tab-btn" data-tab="pending" onclick="switchTab(this)">未處理</button>
+              <button class="tab-btn" data-tab="resolved" onclick="switchTab(this)">已處理</button>
+            </div>
+          </div>
+
+          <!-- Alert List -->
+          <div id="alert-list" class="flex-1 flex flex-col"></div>
+
+          <!-- Empty State -->
+          <div id="empty-state" class="hidden flex flex-col items-center justify-center py-16 text-center">
+            <span class="material-symbols-sharp text-muted-foreground" style="font-size: 64px;">notifications_off</span>
+            <p class="mt-4 text-lg text-muted-foreground">沒有符合條件的告警</p>
+            <p class="mt-2 text-sm text-muted-foreground">請嘗試調整篩選條件</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Resolve Confirmation Modal -->
+  <div class="modal-overlay" id="resolve-modal">
+    <div class="bg-card rounded-lg shadow-xl w-[420px] animate-slide-down">
+      <div class="p-6 border-b border-border">
+        <h3 class="font-primary text-lg font-semibold text-foreground">確認處理告警</h3>
+      </div>
+      <div class="p-6">
+        <p id="resolve-modal-text" class="text-sm text-muted-foreground">確定要將此告警標記為已處理嗎？</p>
+        <div id="resolve-modal-detail" class="mt-3 p-3 bg-muted rounded">
+          <p id="resolve-modal-title" class="text-sm font-medium text-foreground"></p>
+          <p id="resolve-modal-desc" class="text-xs text-muted-foreground mt-1"></p>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-3 p-4 border-t border-border">
+        <button onclick="closeResolveModal()" class="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">取消</button>
+        <button onclick="confirmResolve()" class="px-5 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-full hover:opacity-90 transition-opacity">確認處理</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div class="modal-overlay" id="detail-modal">
+    <div class="bg-card rounded-lg shadow-xl w-[520px] animate-slide-down">
+      <div class="flex items-center justify-between p-6 border-b border-border">
+        <h3 class="font-primary text-lg font-semibold text-foreground">告警詳情</h3>
+        <button onclick="closeDetailModal()" class="text-muted-foreground hover:text-foreground transition-colors">
+          <span class="material-symbols-sharp">close</span>
+        </button>
+      </div>
+      <div class="p-6 flex flex-col gap-4">
+        <div class="flex items-center gap-3">
+          <span id="detail-badge" class="px-2 py-1 text-xs font-medium rounded"></span>
+          <span id="detail-time" class="text-xs text-muted-foreground"></span>
+        </div>
+        <div>
+          <h4 id="detail-title" class="text-base font-medium text-foreground"></h4>
+          <p id="detail-desc" class="text-sm text-muted-foreground mt-1"></p>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="flex flex-col gap-1 p-3 bg-muted rounded">
+            <span class="text-xs text-muted-foreground">來源類型</span>
+            <span id="detail-source" class="text-sm font-medium text-foreground"></span>
+          </div>
+          <div class="flex flex-col gap-1 p-3 bg-muted rounded">
+            <span class="text-xs text-muted-foreground">狀態</span>
+            <span id="detail-status" class="text-sm font-medium text-foreground"></span>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-3 p-4 border-t border-border">
+        <button onclick="closeDetailModal()" class="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">關閉</button>
+        <button id="detail-resolve-btn" class="px-5 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-full hover:opacity-90 transition-opacity">標記為已處理</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============ DATA ============
+    const sourceLabels = {
+      temperature: '溫度異常',
+      current: '電流異常',
+      voltage: '電壓異常',
+      power: '用電異常',
+      equipment: '設備通知',
+    };
+
+    const alerts = [
+      {
+        id: 1,
+        severity: 'critical',
+        title: 'CNC-03 設備溫度過高 (85°C)',
+        description: '設備溫度超過安全閾值，建議立即檢查冷卻系統',
+        source: 'temperature',
+        time: '10 分鐘前',
+        timestamp: Date.now() - 10 * 60 * 1000,
+        status: 'pending',
+      },
+      {
+        id: 2,
+        severity: 'critical',
+        title: '射出機 B-01 電流異常',
+        description: '電流值超過額定值 120%，可能存在過載風險',
+        source: 'current',
+        time: '25 分鐘前',
+        timestamp: Date.now() - 25 * 60 * 1000,
+        status: 'pending',
+      },
+      {
+        id: 3,
+        severity: 'warning',
+        title: 'A 區用電量超過預算 15%',
+        description: '本月用電量已超過預算限額，建議評估節能措施',
+        source: 'power',
+        time: '1 小時前',
+        timestamp: Date.now() - 60 * 60 * 1000,
+        status: 'pending',
+      },
+      {
+        id: 4,
+        severity: 'warning',
+        title: '空壓機 A 振動值異常',
+        description: '振動頻率偏離正常範圍，建議安排預防性維護',
+        source: 'equipment',
+        time: '2 小時前',
+        timestamp: Date.now() - 2 * 60 * 60 * 1000,
+        status: 'pending',
+      },
+      {
+        id: 5,
+        severity: 'warning',
+        title: 'CNC-07 電壓波動偏高',
+        description: '輸入電壓波動超過 ±10%，影響加工精度',
+        source: 'voltage',
+        time: '2.5 小時前',
+        timestamp: Date.now() - 2.5 * 60 * 60 * 1000,
+        status: 'pending',
+      },
+      {
+        id: 6,
+        severity: 'warning',
+        title: '產線 2 馬達溫度上升',
+        description: '馬達溫度從 55°C 上升至 72°C，接近警戒值',
+        source: 'temperature',
+        time: '3 小時前',
+        timestamp: Date.now() - 3 * 60 * 60 * 1000,
+        status: 'pending',
+      },
+      {
+        id: 7,
+        severity: 'warning',
+        title: '裝置 C3 電流不穩定',
+        description: '電流值在 18~25A 間波動，建議檢查接線',
+        source: 'current',
+        time: '3.5 小時前',
+        timestamp: Date.now() - 3.5 * 60 * 60 * 1000,
+        status: 'pending',
+      },
+      {
+        id: 8,
+        severity: 'info',
+        title: 'CNC-01 換刀完成通知',
+        description: '刀具更換已完成，設備已恢復正常運行',
+        source: 'equipment',
+        time: '3 小時前',
+        timestamp: Date.now() - 3 * 60 * 60 * 1000,
+        status: 'resolved',
+      },
+      {
+        id: 9,
+        severity: 'info',
+        title: '產線 1 日常保養完成',
+        description: '預防性維護已依排程完成，所有項目正常',
+        source: 'equipment',
+        time: '4 小時前',
+        timestamp: Date.now() - 4 * 60 * 60 * 1000,
+        status: 'resolved',
+      },
+      {
+        id: 10,
+        severity: 'warning',
+        title: 'B 區電壓偏低通知',
+        description: '電壓低於標準值 5%，已自動調整',
+        source: 'voltage',
+        time: '4.5 小時前',
+        timestamp: Date.now() - 4.5 * 60 * 60 * 1000,
+        status: 'resolved',
+      },
+      {
+        id: 11,
+        severity: 'critical',
+        title: 'CNC-05 過載保護觸發',
+        description: '設備自動停機，已通知維護人員處理',
+        source: 'current',
+        time: '5 小時前',
+        timestamp: Date.now() - 5 * 60 * 60 * 1000,
+        status: 'resolved',
+      },
+      {
+        id: 12,
+        severity: 'info',
+        title: '射出機 A-02 模具更換',
+        description: '模具更換已完成，等待首件確認',
+        source: 'equipment',
+        time: '5.5 小時前',
+        timestamp: Date.now() - 5.5 * 60 * 60 * 1000,
+        status: 'resolved',
+      },
+      {
+        id: 13,
+        severity: 'warning',
+        title: '空壓機 B 壓力偏低',
+        description: '系統壓力低於設定值，已自動補壓',
+        source: 'equipment',
+        time: '6 小時前',
+        timestamp: Date.now() - 6 * 60 * 60 * 1000,
+        status: 'resolved',
+      },
+      {
+        id: 14,
+        severity: 'info',
+        title: '產線 3 啟動完成',
+        description: '所有設備已正常啟動，開始生產',
+        source: 'equipment',
+        time: '7 小時前',
+        timestamp: Date.now() - 7 * 60 * 60 * 1000,
+        status: 'resolved',
+      },
+      {
+        id: 15,
+        severity: 'critical',
+        title: '裝置 A2 溫度感測器離線',
+        description: '感測器通訊中斷，已切換備用感測器',
+        source: 'temperature',
+        time: '8 小時前',
+        timestamp: Date.now() - 8 * 60 * 60 * 1000,
+        status: 'resolved',
+      },
+    ];
+
+    // ============ STATE ============
+    let currentTab = 'all';
+    let currentSeverityFilter = 'all';
+    let currentSourceFilter = 'all';
+    let searchQuery = '';
+    let pendingResolveId = null;
+    let detailAlertId = null;
+
+    // ============ SEVERITY HELPERS ============
+    function getSeverityDisplay(severity) {
+      switch (severity) {
+        case 'critical': return { text: '嚴重', bg: 'bg-error', color: 'text-error-foreground' };
+        case 'warning': return { text: '警告', bg: 'bg-warning', color: 'text-warning-foreground' };
+        case 'info': return { text: '資訊', bg: 'bg-info', color: 'text-info-foreground' };
+      }
+    }
+
+    // ============ FILTER FUNCTIONS ============
+    function getFilteredAlerts() {
+      return alerts.filter(alert => {
+        // Tab filter
+        if (currentTab === 'pending' && alert.status !== 'pending') return false;
+        if (currentTab === 'resolved' && alert.status !== 'resolved') return false;
+
+        // Severity filter
+        if (currentSeverityFilter !== 'all' && alert.severity !== currentSeverityFilter) return false;
+
+        // Source filter
+        if (currentSourceFilter !== 'all' && alert.source !== currentSourceFilter) return false;
+
+        // Search
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          if (!alert.title.toLowerCase().includes(q) && !alert.description.toLowerCase().includes(q)) return false;
+        }
+
+        return true;
+      });
+    }
+
+    // ============ DROPDOWN ============
+    function toggleDropdown(id) {
+      const menu = document.getElementById(id).querySelector('.dropdown-menu');
+      document.querySelectorAll('.dropdown-menu').forEach(m => {
+        if (m !== menu) m.classList.remove('open');
+      });
+      menu.classList.toggle('open');
+    }
+
+    function selectSource(el) {
+      const value = el.dataset.value;
+      currentSourceFilter = value;
+      document.getElementById('source-selected').textContent = value === 'all' ? '全部來源' : sourceLabels[value];
+      document.querySelectorAll('#source-menu .dropdown-item').forEach(item => item.classList.remove('selected'));
+      el.classList.add('selected');
+      toggleDropdown('source-dropdown');
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.dropdown')) {
+        document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('open'));
+      }
+    });
+
+    // ============ FILTER PANEL ============
+    document.getElementById('filter-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const panel = document.getElementById('filter-panel');
+      panel.classList.toggle('open');
+    });
+
+    document.addEventListener('click', (e) => {
+      const panel = document.getElementById('filter-panel');
+      if (!e.target.closest('#filter-panel') && !e.target.closest('#filter-btn')) {
+        panel.classList.remove('open');
+      }
+    });
+
+    // Severity filter buttons in panel
+    document.querySelectorAll('.severity-filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.severity-filter-btn').forEach(b => {
+          b.classList.remove('bg-foreground', 'text-white', 'border-foreground');
+          b.classList.add('bg-muted', 'text-muted-foreground', 'border-border');
+        });
+        btn.classList.remove('bg-muted', 'text-muted-foreground', 'border-border');
+        btn.classList.add('bg-foreground', 'text-white', 'border-foreground');
+        currentSeverityFilter = btn.dataset.value;
+      });
+    });
+
+    // Init default severity button
+    document.querySelector('.severity-filter-btn[data-value="all"]').classList.remove('bg-muted', 'text-muted-foreground', 'border-border');
+    document.querySelector('.severity-filter-btn[data-value="all"]').classList.add('bg-foreground', 'text-white', 'border-foreground');
+
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      searchQuery = e.target.value;
+    });
+
+    document.getElementById('filter-apply').addEventListener('click', () => {
+      document.getElementById('filter-panel').classList.remove('open');
+      renderAlerts();
+      updateMetrics();
+      updateFilterBadge();
+    });
+
+    document.getElementById('filter-cancel').addEventListener('click', () => {
+      document.getElementById('filter-panel').classList.remove('open');
+    });
+
+    document.getElementById('filter-reset').addEventListener('click', () => {
+      currentSeverityFilter = 'all';
+      currentSourceFilter = 'all';
+      searchQuery = '';
+
+      // Reset UI
+      document.querySelectorAll('.severity-filter-btn').forEach(b => {
+        b.classList.remove('bg-foreground', 'text-white', 'border-foreground');
+        b.classList.add('bg-muted', 'text-muted-foreground', 'border-border');
+      });
+      document.querySelector('.severity-filter-btn[data-value="all"]').classList.remove('bg-muted', 'text-muted-foreground', 'border-border');
+      document.querySelector('.severity-filter-btn[data-value="all"]').classList.add('bg-foreground', 'text-white', 'border-foreground');
+
+      document.getElementById('source-selected').textContent = '全部來源';
+      document.querySelectorAll('#source-menu .dropdown-item').forEach(item => item.classList.remove('selected'));
+      document.querySelector('#source-menu .dropdown-item[data-value="all"]').classList.add('selected');
+
+      document.getElementById('search-input').value = '';
+
+      renderAlerts();
+      updateMetrics();
+      updateFilterBadge();
+    });
+
+    function updateFilterBadge() {
+      let count = 0;
+      if (currentSeverityFilter !== 'all') count++;
+      if (currentSourceFilter !== 'all') count++;
+      if (searchQuery) count++;
+
+      const badge = document.getElementById('filter-badge');
+      if (count > 0) {
+        badge.textContent = count;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    // ============ TABS ============
+    function switchTab(el) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      currentTab = el.dataset.tab;
+      renderAlerts();
+    }
+
+    // ============ RENDER ============
+    function renderAlerts() {
+      const filtered = getFilteredAlerts();
+      const list = document.getElementById('alert-list');
+      const emptyState = document.getElementById('empty-state');
+
+      if (filtered.length === 0) {
+        list.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      list.classList.remove('hidden');
+      emptyState.classList.add('hidden');
+
+      list.innerHTML = filtered.map(alert => {
+        const sev = getSeverityDisplay(alert.severity);
+        const isResolved = alert.status === 'resolved';
+
+        let actionHtml = '';
+        if (isResolved) {
+          actionHtml = `<span class="text-xs font-medium ${sev.color}">&#10003; 已解決</span>`;
+        } else if (alert.severity === 'critical') {
+          actionHtml = `
+            <button onclick="openResolveModal(${alert.id})" class="flex items-center justify-center gap-1.5 h-10 px-4 bg-primary text-primary-foreground font-primary text-sm font-medium rounded-full hover:opacity-90 transition-opacity">
+              處理
+            </button>`;
+        } else {
+          actionHtml = `
+            <button onclick="openDetailModal(${alert.id})" class="flex items-center justify-center gap-1.5 h-10 px-4 bg-background border border-border text-foreground font-primary text-sm font-medium rounded-full shadow-sm hover:bg-muted transition-colors">
+              查看
+            </button>`;
+        }
+
+        return `
+          <div class="alert-row flex items-center gap-4 px-6 py-4 border-b border-border ${isResolved ? 'resolved' : ''} animate-fade-in">
+            <div class="flex-shrink-0">
+              <span class="inline-block px-2 py-1 text-xs font-medium rounded ${sev.bg} ${sev.color}">${sev.text}</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-foreground truncate">${alert.title}</p>
+              <p class="text-xs text-muted-foreground mt-0.5 truncate">${alert.description}</p>
+            </div>
+            <span class="flex-shrink-0 text-xs text-muted-foreground whitespace-nowrap">${alert.time}</span>
+            <div class="flex-shrink-0 w-20 flex justify-end">${actionHtml}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateMetrics() {
+      const pending = alerts.filter(a => a.status === 'pending');
+      const resolved = alerts.filter(a => a.status === 'resolved');
+
+      document.getElementById('metric-critical').textContent = pending.filter(a => a.severity === 'critical').length;
+      document.getElementById('metric-warning').textContent = pending.filter(a => a.severity === 'warning').length;
+      document.getElementById('metric-info').textContent = alerts.filter(a => a.severity === 'info' || a.source === 'equipment').length;
+      document.getElementById('metric-resolved').textContent = resolved.length;
+    }
+
+    // ============ RESOLVE MODAL ============
+    function openResolveModal(id) {
+      pendingResolveId = id;
+      const alert = alerts.find(a => a.id === id);
+      if (!alert) return;
+
+      document.getElementById('resolve-modal-title').textContent = alert.title;
+      document.getElementById('resolve-modal-desc').textContent = alert.description;
+      document.getElementById('resolve-modal').classList.add('open');
+    }
+
+    function closeResolveModal() {
+      pendingResolveId = null;
+      document.getElementById('resolve-modal').classList.remove('open');
+    }
+
+    function confirmResolve() {
+      if (pendingResolveId === null) return;
+      const alert = alerts.find(a => a.id === pendingResolveId);
+      if (alert) {
+        alert.status = 'resolved';
+      }
+      closeResolveModal();
+      renderAlerts();
+      updateMetrics();
+    }
+
+    // ============ DETAIL MODAL ============
+    function openDetailModal(id) {
+      detailAlertId = id;
+      const alert = alerts.find(a => a.id === id);
+      if (!alert) return;
+
+      const sev = getSeverityDisplay(alert.severity);
+
+      document.getElementById('detail-badge').textContent = sev.text;
+      document.getElementById('detail-badge').className = `px-2 py-1 text-xs font-medium rounded ${sev.bg} ${sev.color}`;
+      document.getElementById('detail-time').textContent = alert.time;
+      document.getElementById('detail-title').textContent = alert.title;
+      document.getElementById('detail-desc').textContent = alert.description;
+      document.getElementById('detail-source').textContent = sourceLabels[alert.source] || alert.source;
+      document.getElementById('detail-status').textContent = alert.status === 'pending' ? '待處理' : '已處理';
+
+      const resolveBtn = document.getElementById('detail-resolve-btn');
+      if (alert.status === 'resolved') {
+        resolveBtn.classList.add('hidden');
+      } else {
+        resolveBtn.classList.remove('hidden');
+        resolveBtn.onclick = () => {
+          alert.status = 'resolved';
+          closeDetailModal();
+          renderAlerts();
+          updateMetrics();
+        };
+      }
+
+      document.getElementById('detail-modal').classList.add('open');
+    }
+
+    function closeDetailModal() {
+      detailAlertId = null;
+      document.getElementById('detail-modal').classList.remove('open');
+    }
+
+    // Close modals on overlay click
+    document.getElementById('resolve-modal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeResolveModal();
+    });
+    document.getElementById('detail-modal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeDetailModal();
+    });
+
+    // Close modals on Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeResolveModal();
+        closeDetailModal();
+      }
+    });
+
+    // ============ INIT ============
+    function init() {
+      renderAlerts();
+      updateMetrics();
+    }
+
+    init();
+  </script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>單一裝置溫度監控 - IFDCS</title>
+  <title>單一裝置電流監控 - IFDCS</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -128,7 +128,7 @@
 <body class="h-full bg-background font-secondary">
   <div class="flex h-full w-full">
     <!-- Sidebar -->
-    <aside id="sidebar" class="flex flex-col w-[280px] h-full bg-sidebar border-r border-border" data-active="溫度監控"></aside>
+    <aside id="sidebar" class="flex flex-col w-[280px] h-full bg-sidebar border-r border-border" data-active="電流監控"></aside>
     <script src="sidebar.js"></script>
 
     <!-- Main Content -->
@@ -140,9 +140,9 @@
           <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
           <span class="text-sm text-muted-foreground">宜蘭廠區</span>
           <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
-          <span class="text-sm text-muted-foreground">溫度監控</span>
+          <span class="text-sm text-muted-foreground">電流監控</span>
           <span class="material-symbols-sharp icon-14 text-muted-foreground">chevron_right</span>
-          <span id="breadcrumb-device" class="text-sm text-foreground">裝置 A1</span>
+          <span id="breadcrumb-device" class="text-sm text-foreground">CNC 加工機 #01</span>
         </nav>
         <div class="flex items-center gap-4">
           <button class="flex items-center gap-1.5 h-10 px-4 rounded-full">
@@ -159,18 +159,18 @@
         <!-- Page Header -->
         <div class="flex items-center justify-between">
           <div class="flex flex-col gap-2">
-            <h1 class="font-primary text-[32px] font-semibold text-foreground">溫度監控</h1>
-            <p class="text-sm text-muted-foreground">單一裝置詳細溫度監控</p>
+            <h1 class="font-primary text-[32px] font-semibold text-foreground">電流監控</h1>
+            <p class="text-sm text-muted-foreground">單一裝置詳細電流監控</p>
           </div>
           <div class="flex items-center gap-3">
             <button id="refresh-btn" class="flex items-center gap-2 px-[18px] py-2.5 text-muted-foreground hover:bg-muted rounded transition-colors">
               <span class="material-symbols-sharp icon-20">refresh</span>
               <span class="text-sm">刷新</span>
             </button>
-            <a href="temperature_calibration.html" class="flex items-center gap-2 px-[18px] py-2.5 bg-primary rounded-full hover:opacity-90 transition-opacity">
-              <span class="material-symbols-sharp icon-20 text-foreground">tune</span>
-              <span class="text-sm font-semibold text-foreground">校正設定</span>
-            </a>
+            <button class="flex items-center gap-2 px-[18px] py-2.5 bg-primary rounded-full hover:opacity-90 transition-opacity">
+              <span class="material-symbols-sharp icon-20 text-foreground">download</span>
+              <span class="text-sm font-semibold text-foreground">匯出報表</span>
+            </button>
           </div>
         </div>
 
@@ -200,7 +200,7 @@
             <label class="text-[13px] font-medium text-foreground">選擇裝置</label>
             <div class="dropdown" id="device-dropdown">
               <button class="flex items-center justify-between w-full h-11 px-4 bg-muted border border-border rounded" onclick="toggleDropdown('device-dropdown')">
-                <span id="device-selected">裝置 A1</span>
+                <span id="device-selected">CNC 加工機 #01</span>
                 <span class="material-symbols-sharp icon-20 text-muted-foreground">keyboard_arrow_down</span>
               </button>
               <div class="dropdown-menu" id="device-menu">
@@ -212,20 +212,20 @@
 
         <!-- Device Info Row -->
         <div class="flex gap-4">
-          <!-- Current Temperature Card -->
+          <!-- Current Value Card -->
           <div class="flex-1 flex flex-col gap-4 p-6 bg-card border border-border rounded shadow-sm">
             <div class="flex items-center justify-between">
-              <span id="device-title" class="font-primary text-base font-semibold text-foreground">裝置 A1 - 當前溫度</span>
+              <span id="device-title" class="font-primary text-base font-semibold text-foreground">CNC 加工機 #01 - 當前電流</span>
               <div id="status-indicator" class="flex items-center gap-1.5">
                 <div class="w-2 h-2 rounded-full bg-success-foreground"></div>
                 <span class="text-xs font-medium text-success-foreground">正常</span>
               </div>
             </div>
-            <span id="current-temp" class="font-primary text-[56px] font-semibold text-foreground leading-none">24.5°C</span>
+            <span id="current-value" class="font-primary text-[56px] font-semibold text-foreground leading-none">28.5 A</span>
             <div class="flex gap-6">
               <div class="flex flex-col gap-1">
                 <span class="text-xs text-muted-foreground">正常範圍</span>
-                <span id="normal-range" class="text-sm font-medium text-foreground">20-30°C</span>
+                <span id="normal-range" class="text-sm font-medium text-foreground">10-45 A</span>
               </div>
               <div class="flex flex-col gap-1">
                 <span class="text-xs text-muted-foreground">最後更新</span>
@@ -240,35 +240,64 @@
             <div class="flex gap-6">
               <div class="flex-1 flex flex-col gap-2">
                 <div class="flex items-center justify-center w-8 h-8 bg-info rounded">
-                  <span class="material-symbols-sharp icon-20 text-info-foreground">thermostat</span>
+                  <span class="material-symbols-sharp icon-20 text-info-foreground">electric_bolt</span>
                 </div>
-                <span class="text-xs text-muted-foreground">平均溫度</span>
-                <span id="avg-temp" class="font-primary text-2xl font-semibold text-foreground">25.2°C</span>
+                <span class="text-xs text-muted-foreground">平均電流</span>
+                <span id="avg-current" class="font-primary text-2xl font-semibold text-foreground">26.3 A</span>
               </div>
               <div class="flex-1 flex flex-col gap-2">
                 <div class="flex items-center justify-center w-8 h-8 bg-error rounded">
-                  <span class="material-symbols-sharp icon-20 text-error-foreground">device_thermostat</span>
+                  <span class="material-symbols-sharp icon-20 text-error-foreground">electric_meter</span>
                 </div>
-                <span class="text-xs text-muted-foreground">最高溫度</span>
-                <span id="max-temp" class="font-primary text-2xl font-semibold text-error-foreground">28.7°C</span>
+                <span class="text-xs text-muted-foreground">峰值電流</span>
+                <span id="max-current" class="font-primary text-2xl font-semibold text-error-foreground">38.2 A</span>
               </div>
               <div class="flex-1 flex flex-col gap-2">
                 <div class="flex items-center justify-center w-8 h-8 bg-info rounded">
-                  <span class="material-symbols-sharp icon-20 text-info-foreground">ac_unit</span>
+                  <span class="material-symbols-sharp icon-20 text-info-foreground">trending_down</span>
                 </div>
-                <span class="text-xs text-muted-foreground">最低溫度</span>
-                <span id="min-temp" class="font-primary text-2xl font-semibold text-info-foreground">22.1°C</span>
+                <span class="text-xs text-muted-foreground">最低電流</span>
+                <span id="min-current" class="font-primary text-2xl font-semibold text-info-foreground">15.8 A</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Activation Analysis Card -->
+          <div class="flex-1 flex flex-col gap-4 p-6 bg-card border border-border rounded shadow-sm">
+            <div class="flex items-center justify-between">
+              <span class="font-primary text-base font-semibold text-foreground">啟動分析（所選區間）</span>
+              <div class="flex items-center gap-1.5">
+                <div class="w-4 h-0.5 bg-[#6366F1]"></div>
+                <span class="text-[11px] text-muted-foreground">臨界線</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-6">
+              <div class="flex flex-col gap-2">
+                <div class="flex items-center justify-center w-8 h-8 bg-warning rounded">
+                  <span class="material-symbols-sharp icon-20 text-warning-foreground">repeat</span>
+                </div>
+                <span class="text-xs text-muted-foreground">操作次數</span>
+                <span id="activation-count" class="font-primary text-[28px] font-semibold text-foreground leading-tight">0 次</span>
+              </div>
+              <div class="w-px h-16 bg-border"></div>
+              <div class="flex flex-col gap-2">
+                <label class="text-xs text-muted-foreground">臨界值 (Threshold)</label>
+                <div class="flex items-center gap-2">
+                  <input type="number" id="threshold-input" step="0.5" class="w-20 h-9 px-3 bg-muted border border-border rounded font-primary text-sm text-foreground text-center" value="30">
+                  <span class="text-sm text-muted-foreground">A</span>
+                </div>
+                <span class="text-[11px] text-muted-foreground leading-tight">超過臨界值再回落 = 1 次啟動</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Temperature Chart Card -->
+        <!-- Current Chart Card -->
         <div class="flex-1 flex flex-col gap-5 p-6 bg-card border border-border rounded shadow-sm min-h-[400px]">
           <!-- Chart Header -->
           <div class="flex items-center justify-between flex-wrap gap-4">
             <div class="flex flex-col gap-1">
-              <span class="font-primary text-lg font-semibold text-foreground">溫度變化追蹤</span>
+              <span class="font-primary text-lg font-semibold text-foreground">電流變化追蹤</span>
               <span id="chart-subtitle" class="text-xs text-muted-foreground">解析度: 10 秒 | 範圍: 15 分鐘</span>
             </div>
             <div class="flex items-center gap-4 flex-wrap">
@@ -298,7 +327,7 @@
 
           <!-- Chart Area -->
           <div class="flex-1 bg-muted rounded p-5 min-h-0">
-            <canvas id="temperatureChart" class="w-full h-full"></canvas>
+            <canvas id="currentChart" class="w-full h-full"></canvas>
           </div>
 
           <!-- Range Slider Section -->
@@ -347,25 +376,25 @@
       line1: {
         name: '產線 1',
         devices: [
-          { id: 'A1', name: '裝置 A1', baseTemp: 24.5, range: [20, 30] },
-          { id: 'A2', name: '裝置 A2', baseTemp: 26.8, range: [20, 30] },
-          { id: 'A3', name: '裝置 A3', baseTemp: 25.2, range: [20, 30] },
+          { id: 'A1', name: 'CNC 加工機 #01', baseCurrent: 28.5, range: [10, 45] },
+          { id: 'A2', name: 'CNC 加工機 #02', baseCurrent: 25.2, range: [10, 45] },
+          { id: 'A3', name: '沖壓機 #01', baseCurrent: 32.0, range: [15, 50] },
         ]
       },
       line2: {
         name: '產線 2',
         devices: [
-          { id: 'B1', name: '裝置 B1', baseTemp: 28.5, range: [22, 35] },
-          { id: 'B2', name: '裝置 B2', baseTemp: 30.1, range: [22, 35] },
+          { id: 'B1', name: '射出成型機 #01', baseCurrent: 35.0, range: [15, 55] },
+          { id: 'B2', name: '射出成型機 #02', baseCurrent: 33.5, range: [15, 55] },
         ]
       },
       line3: {
         name: '產線 3',
         devices: [
-          { id: 'C1', name: '裝置 C1', baseTemp: 22.0, range: [18, 28] },
-          { id: 'C2', name: '裝置 C2', baseTemp: 23.5, range: [18, 28] },
-          { id: 'C3', name: '裝置 C3', baseTemp: 21.8, range: [18, 28] },
-          { id: 'C4', name: '裝置 C4', baseTemp: 24.2, range: [18, 28] },
+          { id: 'C1', name: '空壓機 #01', baseCurrent: 20.0, range: [8, 35] },
+          { id: 'C2', name: '空壓機 #02', baseCurrent: 22.5, range: [8, 35] },
+          { id: 'C3', name: '冷卻塔 #01', baseCurrent: 18.0, range: [5, 30] },
+          { id: 'C4', name: '冷卻塔 #02', baseCurrent: 19.5, range: [5, 30] },
         ]
       }
     };
@@ -378,6 +407,7 @@
     let endTime = new Date(); endTime.setHours(9, 15, 0, 0);
     let chart = null;
     let updateInterval = null;
+    let currentThreshold = 30;
 
     // ============ DROPDOWN FUNCTIONS ============
     function toggleDropdown(id) {
@@ -391,9 +421,9 @@
     function selectLine(el) {
       const value = el.dataset.value;
 
-      // If "all" is selected, navigate to Temperature Monitor page
+      // If "all" is selected, navigate to Current Monitor page
       if (value === 'all') {
-        window.location.href = 'temperature_monitor.html';
+        window.location.href = 'current_monitor.html';
         return;
       }
 
@@ -429,9 +459,9 @@
     function selectDeviceFromDropdown(el) {
       const deviceId = el.dataset.value;
 
-      // If "all" is selected, navigate to Temperature Monitor page
+      // If "all" is selected, navigate to Current Monitor page
       if (deviceId === 'all') {
-        window.location.href = 'temperature_monitor.html';
+        window.location.href = 'current_monitor.html';
         return;
       }
 
@@ -448,6 +478,10 @@
         item.classList.toggle('selected', item.dataset.value === deviceId);
       });
 
+      // 切換裝置時重設臨界值為基礎電流 + 1.5A
+      currentThreshold = parseFloat((currentDevice.baseCurrent + 1.5).toFixed(1));
+      document.getElementById('threshold-input').value = currentThreshold;
+
       updateDeviceDisplay();
       regenerateChart();
     }
@@ -461,15 +495,15 @@
 
     // ============ DEVICE DISPLAY ============
     function updateDeviceDisplay() {
-      const temp = currentDevice.baseTemp + (Math.random() - 0.5) * 2;
+      const current = currentDevice.baseCurrent + (Math.random() - 0.5) * 4;
       const [minRange, maxRange] = currentDevice.range;
-      const isNormal = temp >= minRange && temp <= maxRange;
-      const isWarning = temp > maxRange && temp <= maxRange + 5;
+      const isNormal = current >= minRange && current <= maxRange;
+      const isWarning = current > maxRange && current <= maxRange + 10;
 
-      document.getElementById('device-title').textContent = `${currentDevice.name} - 當前溫度`;
+      document.getElementById('device-title').textContent = `${currentDevice.name} - 當前電流`;
       document.getElementById('breadcrumb-device').textContent = currentDevice.name;
-      document.getElementById('current-temp').textContent = temp.toFixed(1) + '°C';
-      document.getElementById('normal-range').textContent = `${minRange}-${maxRange}°C`;
+      document.getElementById('current-value').textContent = current.toFixed(1) + ' A';
+      document.getElementById('normal-range').textContent = `${minRange}-${maxRange} A`;
 
       const statusEl = document.getElementById('status-indicator');
       if (isNormal) {
@@ -481,14 +515,49 @@
       }
 
       // Update statistics
-      const avgTemp = currentDevice.baseTemp + (Math.random() - 0.5);
-      const maxTemp = currentDevice.baseTemp + 2 + Math.random() * 2;
-      const minTemp = currentDevice.baseTemp - 2 - Math.random() * 2;
+      const avgCurrent = currentDevice.baseCurrent + (Math.random() - 0.5) * 2;
+      const maxCurrent = currentDevice.baseCurrent + 5 + Math.random() * 5;
+      const minCurrent = currentDevice.baseCurrent - 5 - Math.random() * 5;
 
-      document.getElementById('avg-temp').textContent = avgTemp.toFixed(1) + '°C';
-      document.getElementById('max-temp').textContent = maxTemp.toFixed(1) + '°C';
-      document.getElementById('min-temp').textContent = minTemp.toFixed(1) + '°C';
+      document.getElementById('avg-current').textContent = avgCurrent.toFixed(1) + ' A';
+      document.getElementById('max-current').textContent = maxCurrent.toFixed(1) + ' A';
+      document.getElementById('min-current').textContent = Math.max(0, minCurrent).toFixed(1) + ' A';
     }
+
+    // ============ ACTIVATION ANALYSIS ============
+    function calculateActivations() {
+      if (!chart) return 0;
+      const data = chart.data.datasets[0].data;
+      let count = 0;
+      let aboveThreshold = data.length > 0 && data[0] >= currentThreshold;
+
+      for (let i = 1; i < data.length; i++) {
+        if (data[i] >= currentThreshold && !aboveThreshold) {
+          aboveThreshold = true;
+        } else if (data[i] < currentThreshold && aboveThreshold) {
+          aboveThreshold = false;
+          count++;
+        }
+      }
+
+      document.getElementById('activation-count').textContent = count + ' 次';
+      return count;
+    }
+
+    function updateThresholdFromInput() {
+      const val = parseFloat(document.getElementById('threshold-input').value);
+      if (!isNaN(val) && val > 0) {
+        currentThreshold = val;
+        if (chart) {
+          chart.data.datasets[3].data = Array(chart.data.labels.length).fill(currentThreshold);
+          chart.update();
+        }
+        calculateActivations();
+      }
+    }
+
+    document.getElementById('threshold-input').addEventListener('change', updateThresholdFromInput);
+    document.getElementById('threshold-input').addEventListener('input', updateThresholdFromInput);
 
     // ============ RESOLUTION SELECTOR ============
     document.querySelectorAll('.res-btn').forEach(btn => {
@@ -570,7 +639,6 @@
     function updateRangeSlider() {
       const slider = document.getElementById('range-slider');
       const selection = document.getElementById('range-selection');
-      const sliderWidth = slider.offsetWidth;
 
       const dayStart = new Date(); dayStart.setHours(0, 0, 0, 0);
       const dayEnd = new Date(); dayEnd.setHours(24, 0, 0, 0);
@@ -649,7 +717,7 @@
     });
 
     // ============ CHART ============
-    function generateTemperatureData() {
+    function generateCurrentData() {
       const data = [];
       const labels = [];
       const duration = (endTime - startTime) / 1000;
@@ -659,35 +727,37 @@
         const time = new Date(startTime.getTime() + i * currentResolution * 1000);
         labels.push(time.toTimeString().slice(0, 8));
 
-        const variation = Math.sin(i / 10) * 2 + (Math.random() - 0.5) * 1;
-        data.push(currentDevice.baseTemp + variation);
+        const variation = Math.sin(i / 10) * 3 + (Math.random() - 0.5) * 2;
+        data.push(currentDevice.baseCurrent + variation);
       }
 
       return { data, labels };
     }
 
     function regenerateChart() {
-      const { data, labels } = generateTemperatureData();
+      const { data, labels } = generateCurrentData();
       const [minRange, maxRange] = currentDevice.range;
 
       if (chart) {
         chart.data.labels = labels;
         chart.data.datasets[0].data = data;
-        chart.data.datasets[1].data = Array(labels.length).fill(maxRange + 5);
+        chart.data.datasets[1].data = Array(labels.length).fill(maxRange + 10);
         chart.data.datasets[2].data = Array(labels.length).fill((minRange + maxRange) / 2);
-        chart.options.scales.y.min = minRange - 5;
-        chart.options.scales.y.max = maxRange + 10;
+        chart.data.datasets[3].data = Array(labels.length).fill(currentThreshold);
+        chart.options.scales.y.min = Math.max(0, minRange - 5);
+        chart.options.scales.y.max = maxRange + 15;
         chart.update();
+        calculateActivations();
       }
     }
 
     function initChart() {
-      const ctx = document.getElementById('temperatureChart').getContext('2d');
+      const ctx = document.getElementById('currentChart').getContext('2d');
       const gradient = ctx.createLinearGradient(0, 0, 0, 300);
       gradient.addColorStop(0, 'rgba(255, 132, 0, 0.2)');
       gradient.addColorStop(1, 'rgba(255, 132, 0, 0)');
 
-      const { data, labels } = generateTemperatureData();
+      const { data, labels } = generateCurrentData();
       const [minRange, maxRange] = currentDevice.range;
 
       chart = new Chart(ctx, {
@@ -696,7 +766,7 @@
           labels: labels,
           datasets: [
             {
-              label: '實際溫度',
+              label: '實際電流',
               data: data,
               borderColor: '#FF8400',
               backgroundColor: gradient,
@@ -711,7 +781,7 @@
             },
             {
               label: '警戒值',
-              data: Array(labels.length).fill(maxRange + 5),
+              data: Array(labels.length).fill(maxRange + 10),
               borderColor: '#EF4444',
               borderWidth: 1,
               borderDash: [5, 5],
@@ -724,6 +794,15 @@
               borderColor: '#22C55E',
               borderWidth: 1,
               borderDash: [5, 5],
+              pointRadius: 0,
+              fill: false,
+            },
+            {
+              label: '臨界值',
+              data: Array(labels.length).fill(currentThreshold),
+              borderColor: '#6366F1',
+              borderWidth: 2,
+              borderDash: [8, 4],
               pointRadius: 0,
               fill: false,
             }
@@ -748,8 +827,8 @@
               callbacks: {
                 title: (ctx) => ctx[0].label,
                 label: (ctx) => {
-                  const labels = ['實際溫度', '警戒值', '標準值'];
-                  return `${labels[ctx.datasetIndex]}: ${ctx.parsed.y.toFixed(1)}°C`;
+                  const labels = ['實際電流', '警戒值', '標準值', '臨界值'];
+                  return `${labels[ctx.datasetIndex]}: ${ctx.parsed.y.toFixed(1)} A`;
                 }
               }
             }
@@ -760,10 +839,10 @@
               ticks: { color: '#666666', font: { size: 11 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 7 }
             },
             y: {
-              min: minRange - 5,
-              max: maxRange + 10,
+              min: Math.max(0, minRange - 5),
+              max: maxRange + 15,
               grid: { color: '#CBCCC9', drawBorder: false },
-              ticks: { color: '#666666', font: { size: 11 }, callback: (v) => v + '°C' }
+              ticks: { color: '#666666', font: { size: 11 }, callback: (v) => v + ' A' }
             }
           }
         }
@@ -774,8 +853,8 @@
     function startRealtimeUpdates() {
       if (updateInterval) clearInterval(updateInterval);
       updateInterval = setInterval(() => {
-        const newTemp = currentDevice.baseTemp + Math.sin(Date.now() / 5000) * 2 + (Math.random() - 0.5);
-        document.getElementById('current-temp').textContent = newTemp.toFixed(1) + '°C';
+        const newCurrent = currentDevice.baseCurrent + Math.sin(Date.now() / 5000) * 3 + (Math.random() - 0.5) * 2;
+        document.getElementById('current-value').textContent = newCurrent.toFixed(1) + ' A';
         document.getElementById('last-update').textContent = '剛剛';
 
         // Update chart with new point
@@ -783,9 +862,10 @@
           const now = new Date();
           chart.data.labels.push(now.toTimeString().slice(0, 8));
           chart.data.labels.shift();
-          chart.data.datasets[0].data.push(newTemp);
+          chart.data.datasets[0].data.push(newCurrent);
           chart.data.datasets[0].data.shift();
           chart.update('none');
+          calculateActivations();
         }
       }, 3000);
     }
@@ -809,7 +889,7 @@
 
     // ============ INIT ============
     function init() {
-      // Check if there's a pre-selected line and device from Temperature Monitor page
+      // Check if there's a pre-selected line and device from Current Monitor page
       const savedLine = sessionStorage.getItem('selectedLine');
       const savedDevice = sessionStorage.getItem('selectedDevice');
 
@@ -836,11 +916,16 @@
         sessionStorage.removeItem('selectedDevice');
       }
 
+      // 設定初始臨界值
+      currentThreshold = parseFloat((currentDevice.baseCurrent + 1.5).toFixed(1));
+      document.getElementById('threshold-input').value = currentThreshold;
+
       updateDeviceDisplay();
       updateTimeDisplays();
       updateRangeSlider();
       drawMiniChart();
       initChart();
+      calculateActivations();
       startRealtimeUpdates();
     }
 
