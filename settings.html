@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>系統設定 - IFDCS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@24,100,0,0" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'primary': ['JetBrains Mono', 'monospace'],
+            'secondary': ['Geist', 'sans-serif'],
+          },
+          colors: {
+            'background': 'var(--color-background)',
+            'foreground': 'var(--color-foreground)',
+            'card': 'var(--color-card)',
+            'card-foreground': 'var(--color-card-foreground)',
+            'border': 'var(--color-border)',
+            'muted': 'var(--color-muted)',
+            'muted-foreground': 'var(--color-muted-foreground)',
+            'primary': 'var(--color-primary)',
+            'primary-foreground': 'var(--color-primary-foreground)',
+            'secondary': 'var(--color-secondary)',
+            'secondary-foreground': 'var(--color-secondary-foreground)',
+            'sidebar': 'var(--color-sidebar)',
+            'sidebar-accent': 'var(--color-sidebar-accent)',
+            'sidebar-foreground': 'var(--color-sidebar-foreground)',
+            'sidebar-primary': 'var(--color-sidebar-primary)',
+            'error': 'var(--color-error)',
+            'error-foreground': 'var(--color-error-foreground)',
+            'warning': 'var(--color-warning)',
+            'warning-foreground': 'var(--color-warning-foreground)',
+            'success': 'var(--color-success)',
+            'success-foreground': 'var(--color-success-foreground)',
+            'info': 'var(--color-info)',
+            'info-foreground': 'var(--color-info-foreground)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .material-symbols-sharp {
+      font-family: 'Material Symbols Sharp';
+      font-weight: 100;
+      font-style: normal;
+      font-size: 24px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-smoothing: antialiased;
+    }
+    .icon-20 { font-size: 20px; }
+    .icon-16 { font-size: 16px; }
+
+    /* Dropdown */
+    .dropdown { position: relative; }
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      margin-top: 4px;
+      background: white;
+      border: 1px solid #CBCCC9;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      display: none;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .dropdown-menu.open { display: block; }
+    .dropdown-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.15s;
+    }
+    .dropdown-item:hover { background-color: #F2F3F0; }
+    .dropdown-item.selected { background-color: #FF840020; color: #FF8400; }
+
+    /* Tabs */
+    .tab-btn {
+      padding: 10px 20px;
+      border-bottom: 2px solid transparent;
+      color: #666666;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { color: #111111; }
+    .tab-btn.active {
+      color: #FF8400;
+      border-bottom-color: #FF8400;
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Form inputs */
+    .form-input {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid #CBCCC9;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #111111;
+      background: white;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .form-input:focus { border-color: #FF8400; }
+    .form-input:disabled { background: #F2F3F0; color: #999; }
+
+    /* Table */
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th {
+      padding: 10px 16px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      color: #666666;
+      border-bottom: 1px solid #CBCCC9;
+      background: #F2F3F0;
+    }
+    .data-table td {
+      padding: 12px 16px;
+      font-size: 14px;
+      color: #111111;
+      border-bottom: 1px solid #F2F3F0;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: #fafaf9; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-size: 14px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast-success { background: #DFE6E1; color: #004D1A; }
+    .toast-error { background: #E5DCDA; color: #8C1C00; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      width: 480px;
+      max-width: 95vw;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    /* Role badge */
+    .badge-system { background: #DFDFE6; color: #000066; }
+    .badge-manager { background: #DFE6E1; color: #004D1A; }
+    .badge-operator { background: #E7E8E5; color: #444; }
+
+    /* Password strength */
+    .strength-bar {
+      height: 4px;
+      border-radius: 2px;
+      transition: all 0.3s;
+    }
+
+    /* Threshold input pair */
+    .threshold-input {
+      width: 90px;
+      padding: 6px 10px;
+      border: 1px solid #CBCCC9;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      text-align: right;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .threshold-input:focus { border-color: #FF8400; }
+  </style>
+</head>
+<body class="h-full bg-background font-secondary text-foreground">
+<div class="flex h-full overflow-hidden">
+
+  <!-- ===== Sidebar ===== -->
+  <aside id="sidebar" class="flex flex-col w-[280px] h-full bg-sidebar border-r border-border flex-shrink-0" data-active="系統設定"></aside>
+
+  <!-- ===== Main ===== -->
+  <div class="flex-1 flex flex-col h-full overflow-hidden">
+
+    <!-- Top bar -->
+    <div class="flex items-center h-[88px] px-8 border-b border-border bg-card flex-shrink-0">
+      <div class="flex flex-col gap-1">
+        <span class="text-sm text-muted-foreground">總部 &gt; 宜蘭廠區 &gt; 系統設定</span>
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-sharp icon-20 text-muted-foreground">settings</span>
+          <span class="text-base font-semibold text-foreground">系統設定</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content area -->
+    <div class="flex-1 overflow-y-auto p-8">
+
+      <!-- Page header -->
+      <div class="flex items-start justify-between mb-6">
+        <div>
+          <h1 class="text-xl font-bold text-foreground font-primary">系統設定</h1>
+          <p class="text-sm text-muted-foreground mt-1">告警閾值、裝置管理與帳號設定</p>
+        </div>
+        <!-- Role badge -->
+        <div class="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg">
+          <span class="material-symbols-sharp icon-16 text-muted-foreground">manage_accounts</span>
+          <span class="text-sm text-muted-foreground">目前角色：</span>
+          <span id="currentRoleBadge" class="text-xs font-semibold px-2 py-0.5 rounded-full badge-system">系統人員</span>
+          <!-- Demo role switcher -->
+          <div class="dropdown ml-2">
+            <button onclick="toggleDropdown('roleMenu', event)" class="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+              <span class="material-symbols-sharp icon-16">swap_horiz</span>切換
+            </button>
+            <div class="dropdown-menu" id="roleMenu" style="width:140px; left:auto; right:0;">
+              <div class="dropdown-item" onclick="switchRole('system')">系統人員</div>
+              <div class="dropdown-item" onclick="switchRole('manager')">管理人員</div>
+              <div class="dropdown-item" onclick="switchRole('operator')">操作人員</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab navigation -->
+      <div class="flex border-b border-border mb-6 bg-card rounded-t-lg overflow-hidden" id="tabNav">
+        <button class="tab-btn active" onclick="switchTab('threshold')" id="tab-threshold">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-sharp icon-20">tune</span>告警閾值
+          </div>
+        </button>
+        <button class="tab-btn" onclick="switchTab('devices')" id="tab-devices">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-sharp icon-20">sensors</span>裝置設定
+          </div>
+        </button>
+        <button class="tab-btn" onclick="switchTab('account')" id="tab-account">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-sharp icon-20">person</span>帳號管理
+          </div>
+        </button>
+      </div>
+
+      <!-- ===== TAB 1: 告警閾值 ===== -->
+      <div class="tab-panel active" id="panel-threshold">
+        <!-- Filter row -->
+        <div class="bg-card border border-border rounded-lg p-4 mb-4">
+          <div class="flex items-center gap-4 flex-wrap">
+            <div class="flex items-center gap-2">
+              <span class="text-sm text-muted-foreground whitespace-nowrap">製程</span>
+              <div class="dropdown">
+                <button onclick="toggleDropdown('thProcessMenu', event)" class="flex items-center gap-2 px-3 py-2 bg-muted border border-border rounded-lg text-sm min-w-[130px] justify-between">
+                  <span id="thProcessLabel">全部製程</span>
+                  <span class="material-symbols-sharp icon-16 text-muted-foreground">expand_more</span>
+                </button>
+                <div class="dropdown-menu" id="thProcessMenu"></div>
+              </div>
+            </div>
+            <span class="material-symbols-sharp icon-16 text-muted-foreground">chevron_right</span>
+            <div class="flex items-center gap-2">
+              <span class="text-sm text-muted-foreground whitespace-nowrap">產線</span>
+              <div class="dropdown">
+                <button onclick="toggleDropdown('thLineMenu', event)" class="flex items-center gap-2 px-3 py-2 bg-muted border border-border rounded-lg text-sm min-w-[130px] justify-between">
+                  <span id="thLineLabel">全部產線</span>
+                  <span class="material-symbols-sharp icon-16 text-muted-foreground">expand_more</span>
+                </button>
+                <div class="dropdown-menu" id="thLineMenu"></div>
+              </div>
+            </div>
+            <span class="material-symbols-sharp icon-16 text-muted-foreground">chevron_right</span>
+            <div class="flex items-center gap-2">
+              <span class="text-sm text-muted-foreground whitespace-nowrap">偵測類型</span>
+              <div class="dropdown">
+                <button onclick="toggleDropdown('thTypeMenu', event)" class="flex items-center gap-2 px-3 py-2 bg-muted border border-border rounded-lg text-sm min-w-[110px] justify-between">
+                  <span id="thTypeLabel">選擇類型</span>
+                  <span class="material-symbols-sharp icon-16 text-muted-foreground">expand_more</span>
+                </button>
+                <div class="dropdown-menu" id="thTypeMenu" style="width:140px;">
+                  <div class="dropdown-item" data-value="temperature" onclick="selectThType(this)">溫度感測</div>
+                  <div class="dropdown-item" data-value="current" onclick="selectThType(this)">電流感測</div>
+                  <div class="dropdown-item" data-value="voltage" onclick="selectThType(this)">電壓感測</div>
+                </div>
+              </div>
+            </div>
+            <div class="ml-auto flex items-center gap-2">
+              <button onclick="saveAllThresholds()" class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-orange-500 transition-colors">
+                <span class="material-symbols-sharp icon-20">save</span>全部儲存
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Threshold table -->
+        <div class="bg-card border border-border rounded-lg overflow-hidden">
+          <div id="thEmptyState" class="flex flex-col items-center justify-center py-16 text-center">
+            <span class="material-symbols-sharp text-muted-foreground mb-3" style="font-size:48px;">tune</span>
+            <p class="text-muted-foreground text-sm">請選擇製程、產線與偵測類型以顯示裝置清單</p>
+          </div>
+          <div id="thTableWrap" class="hidden">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>裝置名稱</th>
+                  <th>偵測類型</th>
+                  <th style="text-align:right;">下限值</th>
+                  <th style="text-align:right;">上限值</th>
+                  <th>單位</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="thTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div><!-- /panel-threshold -->
+
+      <!-- ===== TAB 2: 裝置設定 ===== -->
+      <div class="tab-panel" id="panel-devices">
+        <!-- Filter row + Add button -->
+        <div class="bg-card border border-border rounded-lg p-4 mb-4">
+          <div class="flex items-center gap-4 flex-wrap">
+            <div class="flex items-center gap-2">
+              <span class="text-sm text-muted-foreground whitespace-nowrap">製程</span>
+              <div class="dropdown">
+                <button onclick="toggleDropdown('devProcessMenu', event)" class="flex items-center gap-2 px-3 py-2 bg-muted border border-border rounded-lg text-sm min-w-[130px] justify-between">
+                  <span id="devProcessLabel">全部製程</span>
+                  <span class="material-symbols-sharp icon-16 text-muted-foreground">expand_more</span>
+                </button>
+                <div class="dropdown-menu" id="devProcessMenu"></div>
+              </div>
+            </div>
+            <span class="material-symbols-sharp icon-16 text-muted-foreground">chevron_right</span>
+            <div class="flex items-center gap-2">
+              <span class="text-sm text-muted-foreground whitespace-nowrap">產線</span>
+              <div class="dropdown">
+                <button onclick="toggleDropdown('devLineMenu', event)" class="flex items-center gap-2 px-3 py-2 bg-muted border border-border rounded-lg text-sm min-w-[130px] justify-between">
+                  <span id="devLineLabel">全部產線</span>
+                  <span class="material-symbols-sharp icon-16 text-muted-foreground">expand_more</span>
+                </button>
+                <div class="dropdown-menu" id="devLineMenu"></div>
+              </div>
+            </div>
+            <div class="ml-auto">
+              <button onclick="openDeviceModal(null)" class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-orange-500 transition-colors">
+                <span class="material-symbols-sharp icon-20">add</span>新增裝置
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Device table -->
+        <div class="bg-card border border-border rounded-lg overflow-hidden">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>編號</th>
+                <th>裝置名稱</th>
+                <th>Address</th>
+                <th>偵測類型</th>
+                <th>製程</th>
+                <th>產線</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="devTableBody"></tbody>
+          </table>
+          <div id="devEmptyState" class="hidden flex flex-col items-center justify-center py-12 text-center">
+            <span class="material-symbols-sharp text-muted-foreground mb-3" style="font-size:48px;">sensors_off</span>
+            <p class="text-muted-foreground text-sm">目前沒有符合條件的裝置</p>
+          </div>
+        </div>
+      </div><!-- /panel-devices -->
+
+      <!-- ===== TAB 3: 帳號管理 ===== -->
+      <div class="tab-panel" id="panel-account">
+        <div class="grid grid-cols-1 gap-6" id="accountLayout">
+
+          <!-- My account card -->
+          <div class="bg-card border border-border rounded-lg p-6">
+            <h2 class="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
+              <span class="material-symbols-sharp icon-20 text-primary">badge</span>我的帳號
+            </h2>
+            <div class="flex items-start gap-6 flex-wrap">
+              <!-- Avatar -->
+              <div class="flex items-center justify-center w-16 h-16 rounded-full bg-primary text-white text-2xl font-bold font-primary flex-shrink-0">
+                <span id="avatarInitial">A</span>
+              </div>
+              <!-- Info -->
+              <div class="flex-1 grid grid-cols-1 gap-3 min-w-[200px]">
+                <div>
+                  <span class="text-xs text-muted-foreground">姓名</span>
+                  <p class="text-sm font-semibold text-foreground mt-0.5" id="myName">系統管理員</p>
+                </div>
+                <div>
+                  <span class="text-xs text-muted-foreground">帳號</span>
+                  <p class="text-sm text-foreground mt-0.5 font-primary" id="myEmail">admin@factory.com</p>
+                </div>
+                <div>
+                  <span class="text-xs text-muted-foreground">角色</span>
+                  <div class="mt-0.5">
+                    <span id="myRoleBadge" class="text-xs font-semibold px-2 py-0.5 rounded-full badge-system">系統人員</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Change password card -->
+          <div class="bg-card border border-border rounded-lg p-6">
+            <h2 class="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
+              <span class="material-symbols-sharp icon-20 text-primary">lock_reset</span>修改密碼
+            </h2>
+            <div class="grid grid-cols-1 gap-4 max-w-md">
+              <div>
+                <label class="text-sm text-muted-foreground block mb-1.5">目前密碼</label>
+                <div class="relative">
+                  <input type="password" id="oldPassword" class="form-input pr-10" placeholder="請輸入目前密碼">
+                  <button onclick="togglePwd('oldPassword', 'eyeOld')" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                    <span class="material-symbols-sharp icon-20" id="eyeOld">visibility_off</span>
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label class="text-sm text-muted-foreground block mb-1.5">新密碼</label>
+                <div class="relative">
+                  <input type="password" id="newPassword" class="form-input pr-10" placeholder="請輸入新密碼" oninput="checkPwdStrength()">
+                  <button onclick="togglePwd('newPassword', 'eyeNew')" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                    <span class="material-symbols-sharp icon-20" id="eyeNew">visibility_off</span>
+                  </button>
+                </div>
+                <!-- Strength bar -->
+                <div class="mt-2 flex gap-1">
+                  <div class="strength-bar flex-1 bg-border" id="s1"></div>
+                  <div class="strength-bar flex-1 bg-border" id="s2"></div>
+                  <div class="strength-bar flex-1 bg-border" id="s3"></div>
+                  <div class="strength-bar flex-1 bg-border" id="s4"></div>
+                </div>
+                <p class="text-xs text-muted-foreground mt-1" id="strengthLabel"></p>
+              </div>
+              <div>
+                <label class="text-sm text-muted-foreground block mb-1.5">確認新密碼</label>
+                <div class="relative">
+                  <input type="password" id="confirmPassword" class="form-input pr-10" placeholder="再次輸入新密碼">
+                  <button onclick="togglePwd('confirmPassword', 'eyeConfirm')" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                    <span class="material-symbols-sharp icon-20" id="eyeConfirm">visibility_off</span>
+                  </button>
+                </div>
+              </div>
+              <button onclick="changePassword()" class="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-orange-500 transition-colors mt-1">
+                <span class="material-symbols-sharp icon-20">check</span>確認修改
+              </button>
+            </div>
+          </div>
+
+          <!-- User list (管理人員+ only) -->
+          <div class="bg-card border border-border rounded-lg overflow-hidden" id="userListCard">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-border">
+              <h2 class="text-base font-semibold text-foreground flex items-center gap-2">
+                <span class="material-symbols-sharp icon-20 text-primary">group</span>使用者列表
+              </h2>
+              <span class="text-xs text-muted-foreground">管理人員以上可查看</span>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>姓名</th>
+                  <th>帳號</th>
+                  <th>角色</th>
+                  <th>狀態</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="userTableBody"></tbody>
+            </table>
+          </div>
+
+        </div>
+      </div><!-- /panel-account -->
+
+    </div><!-- /content area -->
+  </div><!-- /main -->
+</div><!-- /flex root -->
+
+<!-- ===== Toast ===== -->
+<div class="toast toast-success" id="toast">
+  <span class="material-symbols-sharp icon-20" id="toastIcon">check_circle</span>
+  <span id="toastMsg">儲存成功</span>
+</div>
+
+<!-- ===== Modal: 新增/編輯裝置 ===== -->
+<div class="modal-overlay" id="deviceModal">
+  <div class="modal-box">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-border">
+      <h3 class="text-base font-semibold" id="deviceModalTitle">新增裝置</h3>
+      <button onclick="closeDeviceModal()" class="text-muted-foreground hover:text-foreground">
+        <span class="material-symbols-sharp">close</span>
+      </button>
+    </div>
+    <div class="px-6 py-5 flex flex-col gap-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-sm text-muted-foreground block mb-1.5">裝置名稱 <span class="text-error-foreground">*</span></label>
+          <input type="text" id="modalDevName" class="form-input" placeholder="例：裝置 A1">
+        </div>
+        <div>
+          <label class="text-sm text-muted-foreground block mb-1.5">裝置編號 <span class="text-error-foreground">*</span></label>
+          <input type="text" id="modalDevNumber" class="form-input" placeholder="例：DEV-001">
+        </div>
+      </div>
+      <div>
+        <label class="text-sm text-muted-foreground block mb-1.5">Address <span class="text-error-foreground">*</span></label>
+        <input type="text" id="modalDevAddress" class="form-input" placeholder="例：192.168.1.101 或 COM:01">
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-sm text-muted-foreground block mb-1.5">製程 <span class="text-error-foreground">*</span></label>
+          <div class="dropdown">
+            <button onclick="toggleDropdown('modalProcessMenu', event)" class="form-input flex items-center justify-between text-left">
+              <span id="modalProcessLabel" class="text-muted-foreground">選擇製程</span>
+              <span class="material-symbols-sharp icon-16 text-muted-foreground">expand_more</span>
+            </button>
+            <div class="dropdown-menu" id="modalProcessMenu"></div>
+          </div>
+        </div>
+        <div>
+          <label class="text-sm text-muted-foreground block mb-1.5">產線 <span class="text-error-foreground">*</span></label>
+          <div class="dropdown">
+            <button onclick="toggleDropdown('modalLineMenu', event)" class="form-input flex items-center justify-between text-left">
+              <span id="modalLineLabel" class="text-muted-foreground">選擇產線</span>
+              <span class="material-symbols-sharp icon-16 text-muted-foreground">expand_more</span>
+            </button>
+            <div class="dropdown-menu" id="modalLineMenu"></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <label class="text-sm text-muted-foreground block mb-1.5">偵測類型 <span class="text-error-foreground">*</span></label>
+        <div class="flex gap-2">
+          <label class="flex items-center gap-2 px-3 py-2 border border-border rounded-lg cursor-pointer hover:bg-muted transition-colors flex-1 justify-center" id="typeRadio-temperature">
+            <input type="radio" name="modalDevType" value="temperature" onchange="selectModalType('temperature')" class="accent-primary">
+            <span class="material-symbols-sharp icon-16">device_thermostat</span>
+            <span class="text-sm">溫度</span>
+          </label>
+          <label class="flex items-center gap-2 px-3 py-2 border border-border rounded-lg cursor-pointer hover:bg-muted transition-colors flex-1 justify-center" id="typeRadio-current">
+            <input type="radio" name="modalDevType" value="current" onchange="selectModalType('current')" class="accent-primary">
+            <span class="material-symbols-sharp icon-16">electric_meter</span>
+            <span class="text-sm">電流</span>
+          </label>
+          <label class="flex items-center gap-2 px-3 py-2 border border-border rounded-lg cursor-pointer hover:bg-muted transition-colors flex-1 justify-center" id="typeRadio-voltage">
+            <input type="radio" name="modalDevType" value="voltage" onchange="selectModalType('voltage')" class="accent-primary">
+            <span class="material-symbols-sharp icon-16">power</span>
+            <span class="text-sm">電壓</span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-border">
+      <button onclick="closeDeviceModal()" class="px-4 py-2 border border-border rounded-lg text-sm hover:bg-muted transition-colors">取消</button>
+      <button onclick="saveDevice()" class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-orange-500 transition-colors">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Modal: 確認刪除 ===== -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal-box" style="width:360px;">
+    <div class="px-6 py-5 text-center">
+      <div class="flex items-center justify-center w-12 h-12 rounded-full bg-error mx-auto mb-4">
+        <span class="material-symbols-sharp text-error-foreground">delete</span>
+      </div>
+      <h3 class="text-base font-semibold mb-2">確認刪除裝置</h3>
+      <p class="text-sm text-muted-foreground">確定要刪除 <strong id="deleteDevName" class="text-foreground"></strong> 嗎？此操作無法復原。</p>
+    </div>
+    <div class="flex items-center justify-center gap-3 px-6 py-4 border-t border-border">
+      <button onclick="closeDeleteModal()" class="px-4 py-2 border border-border rounded-lg text-sm hover:bg-muted transition-colors">取消</button>
+      <button onclick="confirmDelete()" class="px-4 py-2 bg-error-foreground text-white rounded-lg text-sm font-semibold hover:opacity-80 transition-opacity">確認刪除</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Modal: 編輯使用者角色 ===== -->
+<div class="modal-overlay" id="editUserModal">
+  <div class="modal-box" style="width:380px;">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-border">
+      <h3 class="text-base font-semibold">編輯使用者</h3>
+      <button onclick="closeEditUserModal()" class="text-muted-foreground hover:text-foreground">
+        <span class="material-symbols-sharp">close</span>
+      </button>
+    </div>
+    <div class="px-6 py-5 flex flex-col gap-4">
+      <div>
+        <label class="text-sm text-muted-foreground block mb-1.5">姓名</label>
+        <input type="text" id="editUserName" class="form-input" disabled>
+      </div>
+      <div>
+        <label class="text-sm text-muted-foreground block mb-1.5">帳號</label>
+        <input type="text" id="editUserEmail" class="form-input" disabled>
+      </div>
+      <div>
+        <label class="text-sm text-muted-foreground block mb-1.5">角色</label>
+        <div class="flex flex-col gap-2">
+          <label class="flex items-center gap-3 p-3 border border-border rounded-lg cursor-pointer hover:bg-muted">
+            <input type="radio" name="editUserRole" value="operator" class="accent-primary">
+            <div>
+              <p class="text-sm font-medium">操作人員</p>
+              <p class="text-xs text-muted-foreground">基本使用功能，可修改自身密碼</p>
+            </div>
+          </label>
+          <label class="flex items-center gap-3 p-3 border border-border rounded-lg cursor-pointer hover:bg-muted">
+            <input type="radio" name="editUserRole" value="manager" class="accent-primary">
+            <div>
+              <p class="text-sm font-medium">管理人員</p>
+              <p class="text-xs text-muted-foreground">可管理人員資料與角色設定</p>
+            </div>
+          </label>
+          <label class="flex items-center gap-3 p-3 border border-border rounded-lg cursor-pointer hover:bg-muted">
+            <input type="radio" name="editUserRole" value="system" class="accent-primary">
+            <div>
+              <p class="text-sm font-medium">系統人員</p>
+              <p class="text-xs text-muted-foreground">可進行裝置設定與告警閾值管理</p>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-border">
+      <button onclick="closeEditUserModal()" class="px-4 py-2 border border-border rounded-lg text-sm hover:bg-muted transition-colors">取消</button>
+      <button onclick="saveUserEdit()" class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-orange-500 transition-colors">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="sidebar.js"></script>
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let currentRole = 'system'; // system | manager | operator
+let currentTab = 'threshold';
+
+// Threshold state
+let thState = { processId: 'all', lineId: 'all', type: null };
+let thresholds = {}; // deviceKey -> { lower, upper }
+
+// Device config state
+let devState = { processId: 'all', lineId: 'all' };
+let deviceList = [
+  { uid: 1, number: 'DEV-001', name: '裝置 A1', address: '192.168.1.101', line: 'line1', process: 'process1', type: 'current' },
+  { uid: 2, number: 'DEV-002', name: '裝置 A2', address: '192.168.1.102', line: 'line1', process: 'process1', type: 'current' },
+  { uid: 3, number: 'DEV-003', name: '裝置 A3', address: '192.168.1.103', line: 'line1', process: 'process1', type: 'current' },
+  { uid: 4, number: 'DEV-004', name: '裝置 B1', address: '192.168.1.104', line: 'line2', process: 'process2', type: 'current' },
+  { uid: 5, number: 'DEV-005', name: '裝置 B2', address: '192.168.1.105', line: 'line2', process: 'process2', type: 'current' },
+  { uid: 6, number: 'DEV-006', name: '裝置 C1', address: '192.168.1.106', line: 'line3', process: 'process3', type: 'temperature' },
+  { uid: 7, number: 'DEV-007', name: '裝置 C2', address: '192.168.1.107', line: 'line3', process: 'process3', type: 'temperature' },
+  { uid: 8, number: 'DEV-008', name: '裝置 C3', address: '192.168.1.108', line: 'line3', process: 'process3', type: 'voltage' },
+  { uid: 9, number: 'DEV-009', name: '裝置 C4', address: '192.168.1.109', line: 'line3', process: 'process3', type: 'voltage' },
+];
+let devUidCounter = 10;
+
+// Modal state
+let deviceModalMode = null; // 'add' | 'edit'
+let deviceModalUid = null;
+let modalSelectedProcess = null;
+let modalSelectedLine = null;
+let modalSelectedType = null;
+
+// Delete state
+let deleteTargetUid = null;
+
+// User list state
+let editUserTarget = null;
+const userList = [
+  { id: 1, name: '系統管理員', email: 'admin@factory.com', role: 'system', status: 'active' },
+  { id: 2, name: '生產主管', email: 'manager@factory.com', role: 'manager', status: 'active' },
+  { id: 3, name: '操作員 甲', email: 'op1@factory.com', role: 'operator', status: 'active' },
+  { id: 4, name: '操作員 乙', email: 'op2@factory.com', role: 'operator', status: 'inactive' },
+];
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  initThresholdDropdowns();
+  initDeviceDropdowns();
+  initModalProcessDropdown();
+  renderDeviceTable();
+  renderUserTable();
+  applyRoleUI();
+}
+
+// ============================================================
+// TAB
+// ============================================================
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('panel-' + tab).classList.add('active');
+  currentTab = tab;
+}
+
+// ============================================================
+// ROLE
+// ============================================================
+const ROLE_LABELS = { system: '系統人員', manager: '管理人員', operator: '操作人員' };
+const ROLE_BADGE_CLASS = { system: 'badge-system', manager: 'badge-manager', operator: 'badge-operator' };
+
+function switchRole(role) {
+  currentRole = role;
+  closeAllDropdowns();
+  applyRoleUI();
+  showToast('已切換為' + ROLE_LABELS[role], 'success');
+}
+
+function applyRoleUI() {
+  // Update badge
+  const badge = document.getElementById('currentRoleBadge');
+  badge.textContent = ROLE_LABELS[currentRole];
+  badge.className = 'text-xs font-semibold px-2 py-0.5 rounded-full ' + ROLE_BADGE_CLASS[currentRole];
+
+  const myBadge = document.getElementById('myRoleBadge');
+  myBadge.textContent = ROLE_LABELS[currentRole];
+  myBadge.className = 'text-xs font-semibold px-2 py-0.5 rounded-full ' + ROLE_BADGE_CLASS[currentRole];
+
+  // Tab visibility
+  const canDevices = currentRole === 'system';
+  const canThreshold = currentRole === 'system';
+  const canUserList = currentRole === 'system' || currentRole === 'manager';
+
+  document.getElementById('tab-threshold').style.display = canThreshold ? '' : 'none';
+  document.getElementById('tab-devices').style.display = canDevices ? '' : 'none';
+  document.getElementById('userListCard').style.display = canUserList ? '' : 'none';
+
+  // If current tab is hidden, switch to account
+  if ((currentTab === 'threshold' && !canThreshold) ||
+      (currentTab === 'devices' && !canDevices)) {
+    switchTab('account');
+  }
+}
+
+// ============================================================
+// DROPDOWN UTILITY
+// ============================================================
+function toggleDropdown(id, event) {
+  event && event.stopPropagation();
+  const menu = document.getElementById(id);
+  const isOpen = menu.classList.contains('open');
+  closeAllDropdowns();
+  if (!isOpen) menu.classList.add('open');
+}
+
+function closeAllDropdowns() {
+  document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('open'));
+}
+
+document.addEventListener('click', closeAllDropdowns);
+
+// ============================================================
+// THRESHOLD TAB
+// ============================================================
+function initThresholdDropdowns() {
+  // Process dropdown
+  const processList = getProcessList();
+  let html = '<div class="dropdown-item selected" data-value="all" onclick="selectThProcess(this)">全部製程</div>';
+  processList.forEach(p => {
+    html += `<div class="dropdown-item" data-value="${p.id}" onclick="selectThProcess(this)">${p.name}</div>`;
+  });
+  document.getElementById('thProcessMenu').innerHTML = html;
+
+  // Line dropdown (all)
+  updateThLineDropdown('all');
+}
+
+function updateThLineDropdown(processId) {
+  const lines = getProductionLineList(processId);
+  let html = '<div class="dropdown-item selected" data-value="all" onclick="selectThLine(this)">全部產線</div>';
+  lines.forEach(l => {
+    html += `<div class="dropdown-item" data-value="${l.id}" onclick="selectThLine(this)">${l.name}</div>`;
+  });
+  document.getElementById('thLineMenu').innerHTML = html;
+  thState.lineId = 'all';
+  document.getElementById('thLineLabel').textContent = '全部產線';
+  renderThresholdTable();
+}
+
+function selectThProcess(el) {
+  document.querySelectorAll('#thProcessMenu .dropdown-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  thState.processId = el.dataset.value;
+  document.getElementById('thProcessLabel').textContent = el.textContent;
+  closeAllDropdowns();
+  updateThLineDropdown(thState.processId);
+}
+
+function selectThLine(el) {
+  document.querySelectorAll('#thLineMenu .dropdown-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  thState.lineId = el.dataset.value;
+  document.getElementById('thLineLabel').textContent = el.textContent;
+  closeAllDropdowns();
+  renderThresholdTable();
+}
+
+function selectThType(el) {
+  document.querySelectorAll('#thTypeMenu .dropdown-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  thState.type = el.dataset.value;
+  const typeNames = { temperature: '溫度感測', current: '電流感測', voltage: '電壓感測' };
+  document.getElementById('thTypeLabel').textContent = typeNames[thState.type];
+  closeAllDropdowns();
+  renderThresholdTable();
+}
+
+function getThresholdKey(deviceId, type) { return `${type}:${deviceId}`; }
+
+function getThresholdUnit(type) {
+  return { temperature: '°C', current: 'A', voltage: 'V' }[type] || '';
+}
+
+function renderThresholdTable() {
+  const empty = document.getElementById('thEmptyState');
+  const wrap = document.getElementById('thTableWrap');
+  const tbody = document.getElementById('thTableBody');
+
+  if (!thState.type) {
+    empty.classList.remove('hidden');
+    wrap.classList.add('hidden');
+    return;
+  }
+
+  const devices = getDeviceList(thState.type, thState.lineId === 'all' ? null : thState.lineId).filter(d => {
+    if (thState.lineId !== 'all' && d.line !== thState.lineId) return false;
+    if (thState.processId !== 'all') {
+      const line = getProductionLineById(d.line);
+      if (!line || line.process !== thState.processId) return false;
+    }
+    return true;
+  });
+
+  if (devices.length === 0) {
+    empty.classList.remove('hidden');
+    empty.querySelector('p').textContent = '目前篩選條件下沒有裝置';
+    wrap.classList.add('hidden');
+    return;
+  }
+
+  empty.classList.add('hidden');
+  wrap.classList.remove('hidden');
+
+  const typeNames = { temperature: '溫度感測', current: '電流感測', voltage: '電壓感測' };
+  const unit = getThresholdUnit(thState.type);
+
+  tbody.innerHTML = devices.map(d => {
+    const key = getThresholdKey(d.id, thState.type);
+    if (!thresholds[key]) {
+      thresholds[key] = { lower: d.range[0], upper: d.range[1] };
+    }
+    const th = thresholds[key];
+    return `<tr>
+      <td class="font-medium">${d.name}</td>
+      <td><span class="text-xs px-2 py-0.5 rounded-full bg-info text-info-foreground">${typeNames[thState.type]}</span></td>
+      <td style="text-align:right;">
+        <input type="number" class="threshold-input" value="${th.lower}" id="th_low_${thState.type}_${d.id}" step="0.1">
+      </td>
+      <td style="text-align:right;">
+        <input type="number" class="threshold-input" value="${th.upper}" id="th_high_${thState.type}_${d.id}" step="0.1">
+      </td>
+      <td class="text-muted-foreground font-primary">${unit}</td>
+      <td>
+        <button onclick="saveOneThreshold('${d.id}', '${thState.type}')" class="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-success text-success-foreground rounded-lg hover:opacity-80 transition-opacity">
+          <span class="material-symbols-sharp icon-16">save</span>儲存
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function saveOneThreshold(deviceId, type) {
+  const key = getThresholdKey(deviceId, type);
+  const low = parseFloat(document.getElementById(`th_low_${type}_${deviceId}`).value);
+  const high = parseFloat(document.getElementById(`th_high_${type}_${deviceId}`).value);
+  if (isNaN(low) || isNaN(high)) { showToast('請輸入有效數值', 'error'); return; }
+  if (low >= high) { showToast('下限值必須小於上限值', 'error'); return; }
+  thresholds[key] = { lower: low, upper: high };
+  showToast('閾值已儲存', 'success');
+}
+
+function saveAllThresholds() {
+  if (!thState.type) { showToast('請先選擇偵測類型', 'error'); return; }
+  const devices = getDeviceList(thState.type, thState.lineId === 'all' ? null : thState.lineId).filter(d => {
+    if (thState.processId !== 'all') {
+      const line = getProductionLineById(d.line);
+      if (!line || line.process !== thState.processId) return false;
+    }
+    return true;
+  });
+  let hasError = false;
+  devices.forEach(d => {
+    const key = getThresholdKey(d.id, thState.type);
+    const low = parseFloat(document.getElementById(`th_low_${thState.type}_${d.id}`)?.value);
+    const high = parseFloat(document.getElementById(`th_high_${thState.type}_${d.id}`)?.value);
+    if (!isNaN(low) && !isNaN(high) && low < high) {
+      thresholds[key] = { lower: low, upper: high };
+    } else {
+      hasError = true;
+    }
+  });
+  if (hasError) showToast('部分閾值輸入有誤，其餘已儲存', 'error');
+  else showToast(`已儲存 ${devices.length} 筆閾值設定`, 'success');
+}
+
+// ============================================================
+// DEVICE CONFIG TAB
+// ============================================================
+function initDeviceDropdowns() {
+  const processList = getProcessList();
+  let html = '<div class="dropdown-item selected" data-value="all" onclick="selectDevProcess(this)">全部製程</div>';
+  processList.forEach(p => {
+    html += `<div class="dropdown-item" data-value="${p.id}" onclick="selectDevProcess(this)">${p.name}</div>`;
+  });
+  document.getElementById('devProcessMenu').innerHTML = html;
+  updateDevLineDropdown('all');
+}
+
+function updateDevLineDropdown(processId) {
+  const lines = getProductionLineList(processId);
+  let html = '<div class="dropdown-item selected" data-value="all" onclick="selectDevLine(this)">全部產線</div>';
+  lines.forEach(l => {
+    html += `<div class="dropdown-item" data-value="${l.id}" onclick="selectDevLine(this)">${l.name}</div>`;
+  });
+  document.getElementById('devLineMenu').innerHTML = html;
+  devState.lineId = 'all';
+  document.getElementById('devLineLabel').textContent = '全部產線';
+  renderDeviceTable();
+}
+
+function selectDevProcess(el) {
+  document.querySelectorAll('#devProcessMenu .dropdown-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  devState.processId = el.dataset.value;
+  document.getElementById('devProcessLabel').textContent = el.textContent;
+  closeAllDropdowns();
+  updateDevLineDropdown(devState.processId);
+}
+
+function selectDevLine(el) {
+  document.querySelectorAll('#devLineMenu .dropdown-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  devState.lineId = el.dataset.value;
+  document.getElementById('devLineLabel').textContent = el.textContent;
+  closeAllDropdowns();
+  renderDeviceTable();
+}
+
+function renderDeviceTable() {
+  const tbody = document.getElementById('devTableBody');
+  const empty = document.getElementById('devEmptyState');
+
+  const filtered = deviceList.filter(d => {
+    if (devState.processId !== 'all' && d.process !== devState.processId) return false;
+    if (devState.lineId !== 'all' && d.line !== devState.lineId) return false;
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  const typeIcons = { temperature: 'device_thermostat', current: 'electric_meter', voltage: 'power' };
+  const typeNames = { temperature: '溫度感測', current: '電流感測', voltage: '電壓感測' };
+  const typeColors = { temperature: 'bg-warning text-warning-foreground', current: 'bg-info text-info-foreground', voltage: 'bg-success text-success-foreground' };
+
+  tbody.innerHTML = filtered.map(d => {
+    const line = getProductionLineById(d.line);
+    const process = getProcessById(d.process);
+    return `<tr>
+      <td class="font-primary text-sm">${d.number}</td>
+      <td class="font-medium">${d.name}</td>
+      <td class="font-primary text-sm text-muted-foreground">${d.address}</td>
+      <td>
+        <span class="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full w-fit ${typeColors[d.type]}">
+          <span class="material-symbols-sharp" style="font-size:12px;">${typeIcons[d.type]}</span>
+          ${typeNames[d.type]}
+        </span>
+      </td>
+      <td class="text-sm">${process ? process.name : '-'}</td>
+      <td class="text-sm">${line ? line.name : '-'}</td>
+      <td>
+        <div class="flex items-center gap-2">
+          <button onclick="openDeviceModal(${d.uid})" class="flex items-center gap-1 px-2.5 py-1.5 text-xs border border-border rounded-lg hover:bg-muted transition-colors">
+            <span class="material-symbols-sharp icon-16">edit</span>編輯
+          </button>
+          <button onclick="openDeleteModal(${d.uid})" class="flex items-center gap-1 px-2.5 py-1.5 text-xs border border-error rounded-lg text-error-foreground hover:bg-error transition-colors">
+            <span class="material-symbols-sharp icon-16">delete</span>刪除
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ===== Device Modal =====
+function initModalProcessDropdown() {
+  const processList = getProcessList();
+  let html = processList.map(p =>
+    `<div class="dropdown-item" data-value="${p.id}" onclick="selectModalProcess(this)">${p.name}</div>`
+  ).join('');
+  document.getElementById('modalProcessMenu').innerHTML = html;
+}
+
+function updateModalLineDropdown(processId) {
+  const lines = getProductionLineList(processId);
+  let html = lines.map(l =>
+    `<div class="dropdown-item" data-value="${l.id}" onclick="selectModalLine(this)">${l.name}</div>`
+  ).join('');
+  document.getElementById('modalLineMenu').innerHTML = html || '<div class="dropdown-item text-muted-foreground">無可用產線</div>';
+  modalSelectedLine = null;
+  document.getElementById('modalLineLabel').textContent = '選擇產線';
+  document.getElementById('modalLineLabel').className = 'text-muted-foreground';
+}
+
+function selectModalProcess(el) {
+  document.querySelectorAll('#modalProcessMenu .dropdown-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  modalSelectedProcess = el.dataset.value;
+  document.getElementById('modalProcessLabel').textContent = el.textContent;
+  document.getElementById('modalProcessLabel').className = 'text-foreground';
+  closeAllDropdowns();
+  updateModalLineDropdown(modalSelectedProcess);
+}
+
+function selectModalLine(el) {
+  document.querySelectorAll('#modalLineMenu .dropdown-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  modalSelectedLine = el.dataset.value;
+  document.getElementById('modalLineLabel').textContent = el.textContent;
+  document.getElementById('modalLineLabel').className = 'text-foreground';
+  closeAllDropdowns();
+}
+
+function selectModalType(type) {
+  modalSelectedType = type;
+  ['temperature', 'current', 'voltage'].forEach(t => {
+    const el = document.getElementById('typeRadio-' + t);
+    el.classList.toggle('border-primary', t === type);
+    el.classList.toggle('bg-orange-50', t === type);
+  });
+}
+
+function openDeviceModal(uid) {
+  deviceModalMode = uid === null ? 'add' : 'edit';
+  deviceModalUid = uid;
+  modalSelectedProcess = null;
+  modalSelectedLine = null;
+  modalSelectedType = null;
+
+  document.getElementById('deviceModalTitle').textContent = deviceModalMode === 'add' ? '新增裝置' : '編輯裝置';
+  document.getElementById('modalDevName').value = '';
+  document.getElementById('modalDevNumber').value = '';
+  document.getElementById('modalDevAddress').value = '';
+  document.getElementById('modalProcessLabel').textContent = '選擇製程';
+  document.getElementById('modalProcessLabel').className = 'text-muted-foreground';
+  document.getElementById('modalLineLabel').textContent = '選擇產線';
+  document.getElementById('modalLineLabel').className = 'text-muted-foreground';
+  document.querySelectorAll('input[name="modalDevType"]').forEach(r => r.checked = false);
+  ['temperature', 'current', 'voltage'].forEach(t => {
+    const el = document.getElementById('typeRadio-' + t);
+    el.classList.remove('border-primary', 'bg-orange-50');
+  });
+
+  if (deviceModalMode === 'edit') {
+    const d = deviceList.find(x => x.uid === uid);
+    if (d) {
+      document.getElementById('modalDevName').value = d.name;
+      document.getElementById('modalDevNumber').value = d.number;
+      document.getElementById('modalDevAddress').value = d.address;
+      // Pre-select process
+      const processMenu = document.getElementById('modalProcessMenu');
+      const processEl = processMenu.querySelector(`[data-value="${d.process}"]`);
+      if (processEl) { selectModalProcess(processEl); }
+      // Pre-select line (after process sets up line dropdown)
+      setTimeout(() => {
+        const lineEl = document.getElementById('modalLineMenu').querySelector(`[data-value="${d.line}"]`);
+        if (lineEl) { selectModalLine(lineEl); }
+      }, 50);
+      // Pre-select type
+      const radio = document.querySelector(`input[name="modalDevType"][value="${d.type}"]`);
+      if (radio) { radio.checked = true; selectModalType(d.type); }
+    }
+  }
+
+  document.getElementById('deviceModal').classList.add('open');
+}
+
+function closeDeviceModal() {
+  document.getElementById('deviceModal').classList.remove('open');
+}
+
+function saveDevice() {
+  const name = document.getElementById('modalDevName').value.trim();
+  const number = document.getElementById('modalDevNumber').value.trim();
+  const address = document.getElementById('modalDevAddress').value.trim();
+  if (!name || !number || !address || !modalSelectedProcess || !modalSelectedLine || !modalSelectedType) {
+    showToast('請填寫所有必填欄位', 'error');
+    return;
+  }
+  if (deviceModalMode === 'add') {
+    deviceList.push({ uid: devUidCounter++, number, name, address, line: modalSelectedLine, process: modalSelectedProcess, type: modalSelectedType });
+    showToast('裝置已新增', 'success');
+  } else {
+    const idx = deviceList.findIndex(d => d.uid === deviceModalUid);
+    if (idx !== -1) {
+      deviceList[idx] = { ...deviceList[idx], name, number, address, line: modalSelectedLine, process: modalSelectedProcess, type: modalSelectedType };
+    }
+    showToast('裝置資料已更新', 'success');
+  }
+  closeDeviceModal();
+  renderDeviceTable();
+}
+
+// ===== Delete Modal =====
+function openDeleteModal(uid) {
+  deleteTargetUid = uid;
+  const d = deviceList.find(x => x.uid === uid);
+  document.getElementById('deleteDevName').textContent = d ? d.name : '';
+  document.getElementById('deleteModal').classList.add('open');
+}
+
+function closeDeleteModal() {
+  document.getElementById('deleteModal').classList.remove('open');
+  deleteTargetUid = null;
+}
+
+function confirmDelete() {
+  if (deleteTargetUid !== null) {
+    deviceList = deviceList.filter(d => d.uid !== deleteTargetUid);
+    renderDeviceTable();
+    showToast('裝置已刪除', 'success');
+  }
+  closeDeleteModal();
+}
+
+// ============================================================
+// ACCOUNT TAB
+// ============================================================
+function renderUserTable() {
+  const tbody = document.getElementById('userTableBody');
+  const roleLabels = { system: '系統人員', manager: '管理人員', operator: '操作人員' };
+  const roleBadge = { system: 'badge-system', manager: 'badge-manager', operator: 'badge-operator' };
+  tbody.innerHTML = userList.map(u => `
+    <tr>
+      <td class="font-medium">${u.name}</td>
+      <td class="font-primary text-sm text-muted-foreground">${u.email}</td>
+      <td><span class="text-xs font-semibold px-2 py-0.5 rounded-full ${roleBadge[u.role]}">${roleLabels[u.role]}</span></td>
+      <td>
+        <span class="flex items-center gap-1 text-xs w-fit">
+          <span class="w-2 h-2 rounded-full ${u.status === 'active' ? 'bg-success-foreground' : 'bg-muted-foreground'}"></span>
+          ${u.status === 'active' ? '啟用中' : '停用'}
+        </span>
+      </td>
+      <td>
+        <button onclick="openEditUserModal(${u.id})" class="flex items-center gap-1 px-2.5 py-1.5 text-xs border border-border rounded-lg hover:bg-muted transition-colors">
+          <span class="material-symbols-sharp icon-16">edit</span>編輯角色
+        </button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openEditUserModal(userId) {
+  const u = userList.find(x => x.id === userId);
+  if (!u) return;
+  editUserTarget = userId;
+  document.getElementById('editUserName').value = u.name;
+  document.getElementById('editUserEmail').value = u.email;
+  const radio = document.querySelector(`input[name="editUserRole"][value="${u.role}"]`);
+  if (radio) radio.checked = true;
+  document.getElementById('editUserModal').classList.add('open');
+}
+
+function closeEditUserModal() {
+  document.getElementById('editUserModal').classList.remove('open');
+  editUserTarget = null;
+}
+
+function saveUserEdit() {
+  const selected = document.querySelector('input[name="editUserRole"]:checked');
+  if (!selected) { showToast('請選擇角色', 'error'); return; }
+  const u = userList.find(x => x.id === editUserTarget);
+  if (u) {
+    u.role = selected.value;
+    renderUserTable();
+    showToast('使用者角色已更新', 'success');
+  }
+  closeEditUserModal();
+}
+
+// ===== Password =====
+function togglePwd(inputId, eyeId) {
+  const input = document.getElementById(inputId);
+  const eye = document.getElementById(eyeId);
+  if (input.type === 'password') {
+    input.type = 'text';
+    eye.textContent = 'visibility';
+  } else {
+    input.type = 'password';
+    eye.textContent = 'visibility_off';
+  }
+}
+
+function checkPwdStrength() {
+  const pwd = document.getElementById('newPassword').value;
+  let score = 0;
+  if (pwd.length >= 8) score++;
+  if (/[A-Z]/.test(pwd)) score++;
+  if (/[0-9]/.test(pwd)) score++;
+  if (/[^A-Za-z0-9]/.test(pwd)) score++;
+
+  const colors = ['#E5DCDA', '#E9E3D8', '#FF8400', '#004D1A'];
+  const labels = ['', '弱', '中等', '強', '非常強'];
+  const bars = ['s1', 's2', 's3', 's4'];
+  bars.forEach((id, i) => {
+    document.getElementById(id).style.backgroundColor = i < score ? colors[score - 1] : '#CBCCC9';
+  });
+  document.getElementById('strengthLabel').textContent = pwd ? labels[score] : '';
+}
+
+function changePassword() {
+  const old = document.getElementById('oldPassword').value;
+  const nw = document.getElementById('newPassword').value;
+  const confirm = document.getElementById('confirmPassword').value;
+  if (!old || !nw || !confirm) { showToast('請填寫所有欄位', 'error'); return; }
+  if (nw !== confirm) { showToast('新密碼與確認密碼不一致', 'error'); return; }
+  if (nw.length < 8) { showToast('新密碼至少需要 8 個字元', 'error'); return; }
+  // Demo: simulate success
+  document.getElementById('oldPassword').value = '';
+  document.getElementById('newPassword').value = '';
+  document.getElementById('confirmPassword').value = '';
+  checkPwdStrength();
+  showToast('密碼修改成功', 'success');
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+let toastTimer = null;
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('toast');
+  const icon = document.getElementById('toastIcon');
+  const msgEl = document.getElementById('toastMsg');
+  toast.className = `toast toast-${type}`;
+  icon.textContent = type === 'success' ? 'check_circle' : 'error';
+  msgEl.textContent = msg;
+  setTimeout(() => toast.classList.add('show'), 10);
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// ============================================================
+// START
+// ============================================================
+init();
+</script>
+</body>
+</html>

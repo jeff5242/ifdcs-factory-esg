@@ -25,7 +25,7 @@ const SIDEBAR_SECTIONS = [
       { label: '電流監控', icon: 'electric_meter', href: 'current_monitor.html' },
       { label: '電壓監控', icon: 'power', href: 'voltage_monitor.html' },
       { label: '異常通知', icon: 'notifications', href: 'alerts.html' },
-      { label: '系統設定', icon: 'settings', href: '#' },
+      { label: '系統設定', icon: 'settings', href: 'settings.html' },
     ]
   }
 ];

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>電流監控 - IFDCS</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="theme.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -18,29 +19,29 @@
             'secondary': ['Geist', 'sans-serif'],
           },
           colors: {
-            'background': '#F2F3F0',
-            'foreground': '#111111',
-            'card': '#FFFFFF',
-            'card-foreground': '#111111',
-            'border': '#CBCCC9',
-            'muted': '#F2F3F0',
-            'muted-foreground': '#666666',
-            'primary': '#FF8400',
-            'primary-foreground': '#111111',
-            'secondary': '#E7E8E5',
-            'secondary-foreground': '#111111',
-            'sidebar': '#E7E8E5',
-            'sidebar-accent': '#CBCCC9',
-            'sidebar-foreground': '#666666',
-            'sidebar-primary': '#18181b',
-            'error': '#E5DCDA',
-            'error-foreground': '#8C1C00',
-            'warning': '#E9E3D8',
-            'warning-foreground': '#804200',
-            'success': '#DFE6E1',
-            'success-foreground': '#004D1A',
-            'info': '#DFDFE6',
-            'info-foreground': '#000066',
+            'background': 'var(--color-background)',
+            'foreground': 'var(--color-foreground)',
+            'card': 'var(--color-card)',
+            'card-foreground': 'var(--color-card-foreground)',
+            'border': 'var(--color-border)',
+            'muted': 'var(--color-muted)',
+            'muted-foreground': 'var(--color-muted-foreground)',
+            'primary': 'var(--color-primary)',
+            'primary-foreground': 'var(--color-primary-foreground)',
+            'secondary': 'var(--color-secondary)',
+            'secondary-foreground': 'var(--color-secondary-foreground)',
+            'sidebar': 'var(--color-sidebar)',
+            'sidebar-accent': 'var(--color-sidebar-accent)',
+            'sidebar-foreground': 'var(--color-sidebar-foreground)',
+            'sidebar-primary': 'var(--color-sidebar-primary)',
+            'error': 'var(--color-error)',
+            'error-foreground': 'var(--color-error-foreground)',
+            'warning': 'var(--color-warning)',
+            'warning-foreground': 'var(--color-warning-foreground)',
+            'success': 'var(--color-success)',
+            'success-foreground': 'var(--color-success-foreground)',
+            'info': 'var(--color-info)',
+            'info-foreground': 'var(--color-info-foreground)',
           }
         }
       }
@@ -107,7 +108,6 @@
     <!-- Sidebar -->
     <aside id="sidebar" class="flex flex-col w-[280px] h-full bg-sidebar border-r border-border" data-active="電流監控"></aside>
     <script src="sidebar.js"></script>
-    <script src="data.js"></script>
 
     <!-- Main Content -->
     <main class="flex-1 flex flex-col h-full">
@@ -147,14 +147,6 @@
               <span class="material-symbols-sharp icon-20 text-foreground">tune</span>
               <span class="text-sm font-semibold text-foreground">校正設定</span>
             </a>
-          </div>
-        </div>
-
-        <!-- Process Filter Tabs (Level 1) -->
-        <div class="flex items-center gap-3 flex-wrap">
-          <span class="text-[13px] font-medium text-muted-foreground shrink-0">製程篩選</span>
-          <div id="process-tabs" class="flex items-center gap-2 flex-wrap">
-            <!-- 動態生成 -->
           </div>
         </div>
 
@@ -214,75 +206,96 @@
   </div>
 
   <script>
-    // ============ DATA ============
-    // 使用共用資料來源 (data.js)
-    const processes = PROCESSES;
-    const productionLines = PRODUCTION_LINES;
-
-    // 初始化裝置資料（加入 currentValue 欄位）
-    const devices = CURRENT_DEVICES.map(device => ({
-      ...device,
-      currentValue: device.baseCurrent
-    }));
+    // ============ CONFIG ============
+    const USER_ID = 1;
+    const REALTIME_POLL_MS = 3000;
+    const OFFLINE_THRESHOLD_MS = 30000;
 
     // ============ STATE ============
-    let currentProcessFilter = 'all';
+    let pages = [];      // [{page_id, name, devices:[{device_id, name, ct_mA, updated_at}]}]
+    let allDevices = []; // flat list
     let currentLineFilter = 'all';
     let updateInterval = null;
 
-    // ============ HELPER FUNCTIONS ============
+    // ============ API ============
+    async function loadDashboard() {
+      const res = await fetch(`/api/dashboard/${USER_ID}?realtime=true`);
+      const data = await res.json();
+      if (data.status !== 'success') throw new Error(data.message);
+
+      // 展開頁面樹，只取有裝置的葉節點
+      const flatPages = [];
+      function flattenPages(nodes) {
+        for (const p of nodes) {
+          if (p.devices && p.devices.length > 0) {
+            flatPages.push({
+              page_id: p.page_id,
+              name: p.name,
+              devices: p.devices.map(d => ({
+                device_id: d.device_id,
+                name: d.name,
+                ct_mA: d.ct_value || 0,
+                updated_at: d.updated_at || null,
+              }))
+            });
+          }
+          if (p.children && p.children.length > 0) flattenPages(p.children);
+        }
+      }
+      flattenPages(data.pages);
+      pages = flatPages;
+      allDevices = pages.flatMap(p => p.devices.map(d => ({ ...d, page_id: p.page_id, page_name: p.name })));
+    }
+
+    async function pollRealtime() {
+      const pageIds = currentLineFilter === 'all'
+        ? pages.map(p => p.page_id)
+        : [Number(currentLineFilter)];
+
+      await Promise.all(pageIds.map(async (pageId) => {
+        try {
+          const res = await fetch(`/api/line/${pageId}/devices`);
+          const data = await res.json();
+          if (data.status !== 'success') return;
+          for (const d of data.devices) {
+            const dev = allDevices.find(a => a.device_id === d.device_id);
+            if (dev) { dev.ct_mA = d.ct_value || 0; dev.updated_at = d.updated_at; }
+          }
+        } catch (e) { /* ignore individual poll errors */ }
+      }));
+
+      updateDeviceValues();
+    }
+
+    // ============ HELPERS ============
     function getDeviceStatus(device) {
-      const current = device.currentValue;
-      const [min, max] = device.range;
-      if (current >= min && current <= max) return 'normal';
-      if ((current > max && current <= max + 5) || (current < min && current >= min - 5)) return 'warning';
-      return 'error';
+      if (!device.updated_at) return 'offline';
+      if (Date.now() - new Date(device.updated_at).getTime() > OFFLINE_THRESHOLD_MS) return 'offline';
+      return 'normal';
     }
 
     function getStatusDisplay(status) {
-      switch (status) {
-        case 'normal': return { text: '正常', color: 'success-foreground', bg: 'bg-success-foreground' };
-        case 'warning': return { text: '警告', color: 'warning-foreground', bg: 'bg-warning-foreground' };
-        case 'error': return { text: '異常', color: 'error-foreground', bg: 'bg-error-foreground' };
-      }
+      if (status === 'offline') return { text: '離線', color: 'muted-foreground', bg: 'bg-muted-foreground' };
+      return { text: '正常', color: 'success-foreground', bg: 'bg-success-foreground' };
     }
 
-    function getLastUpdateText() {
-      const options = ['剛剛', '1分鐘前', '2分鐘前', '3分鐘前'];
-      return options[Math.floor(Math.random() * options.length)];
+    function formatUpdatedAt(updatedAt) {
+      if (!updatedAt) return '未知';
+      const ms = Date.now() - new Date(updatedAt).getTime();
+      if (ms < 5000) return '剛剛';
+      if (ms < 60000) return `${Math.floor(ms / 1000)} 秒前`;
+      if (ms < 3600000) return `${Math.floor(ms / 60000)} 分鐘前`;
+      return new Date(updatedAt).toLocaleTimeString('zh-TW');
     }
 
-    // ============ TAB FUNCTIONS ============
-    function initProcessTabs() {
-      const container = document.getElementById('process-tabs');
-      const processList = getProcessList();
-
-      let html = `<button class="filter-tab active" data-value="all" onclick="selectProcessTab(this)">全部製程</button>`;
-      processList.forEach(p => {
-        html += `<button class="filter-tab" data-value="${p.id}" onclick="selectProcessTab(this)">${p.name}</button>`;
-      });
-      container.innerHTML = html;
-    }
-
+    // ============ TABS ============
     function initLineTabs() {
       const container = document.getElementById('line-tabs');
-      const lineList = getProductionLineList(currentProcessFilter === 'all' ? null : currentProcessFilter);
-
       let html = `<button class="filter-tab active" data-value="all" onclick="selectLineTab(this)">全部產線</button>`;
-      lineList.forEach(line => {
-        html += `<button class="filter-tab" data-value="${line.id}" onclick="selectLineTab(this)">${line.name}</button>`;
+      pages.forEach(p => {
+        html += `<button class="filter-tab" data-value="${p.page_id}" onclick="selectLineTab(this)">${p.name}</button>`;
       });
       container.innerHTML = html;
-    }
-
-    function selectProcessTab(el) {
-      currentProcessFilter = el.dataset.value;
-      document.querySelectorAll('#process-tabs .filter-tab').forEach(t => t.classList.remove('active'));
-      el.classList.add('active');
-
-      currentLineFilter = 'all';
-      initLineTabs();
-      renderDevices();
     }
 
     function selectLineTab(el) {
@@ -292,16 +305,10 @@
       renderDevices();
     }
 
-    // ============ RENDER FUNCTIONS ============
+    // ============ RENDER ============
     function getFilteredDevices() {
-      return devices.filter(device => {
-        if (currentProcessFilter !== 'all') {
-          const line = productionLines[device.line];
-          if (line.process !== currentProcessFilter) return false;
-        }
-        if (currentLineFilter !== 'all' && device.line !== currentLineFilter) return false;
-        return true;
-      });
+      if (currentLineFilter === 'all') return allDevices;
+      return allDevices.filter(d => d.page_id === Number(currentLineFilter));
     }
 
     function renderDevices() {
@@ -318,32 +325,31 @@
       }
 
       grid.innerHTML = filtered.map(device => {
+        const currentA = (device.ct_mA / 1000).toFixed(2);
         const status = getDeviceStatus(device);
         const statusDisplay = getStatusDisplay(status);
-        const [min, max] = device.range;
-
         return `
           <div class="device-card flex flex-col gap-4 p-6 bg-card border border-border rounded shadow-sm animate-fade-in"
-               onclick="navigateToDevice('${device.line}', '${device.id}')">
+               onclick="navigateToDevice(${device.page_id}, ${device.device_id})">
             <div class="flex items-center justify-between">
               <div class="flex flex-col">
                 <span class="font-primary text-base font-semibold text-foreground">${device.name}</span>
-                <span class="text-xs text-muted-foreground">${productionLines[device.line].name}</span>
+                <span class="text-xs text-muted-foreground">${device.page_name}</span>
               </div>
               <div class="flex items-center gap-1.5">
                 <div class="w-2 h-2 rounded-full ${statusDisplay.bg}"></div>
                 <span class="text-xs font-medium text-${statusDisplay.color}">${statusDisplay.text}</span>
               </div>
             </div>
-            <span class="font-primary text-5xl font-semibold text-foreground device-current" data-id="${device.id}">${device.currentValue.toFixed(1)} A</span>
+            <span class="font-primary text-5xl font-semibold text-foreground device-current" data-id="${device.device_id}">${currentA} A</span>
             <div class="flex gap-4">
               <div class="flex-1 flex flex-col gap-1">
-                <span class="text-xs text-muted-foreground">正常範圍</span>
-                <span class="text-sm font-medium text-foreground">${min}-${max} A</span>
+                <span class="text-xs text-muted-foreground">裝置 ID</span>
+                <span class="text-sm font-medium text-foreground">${device.device_id}</span>
               </div>
               <div class="flex-1 flex flex-col gap-1">
                 <span class="text-xs text-muted-foreground">最後更新</span>
-                <span class="text-sm font-medium text-foreground">${getLastUpdateText()}</span>
+                <span class="text-sm font-medium text-foreground last-update" data-id="${device.device_id}">${formatUpdatedAt(device.updated_at)}</span>
               </div>
             </div>
           </div>
@@ -354,98 +360,70 @@
       updateStatistics(filtered);
     }
 
-    function updateStatistics(filteredDevices) {
-      const currents = filteredDevices.map(d => d.currentValue);
+    function updateDeviceValues() {
+      const filtered = getFilteredDevices();
+      for (const device of filtered) {
+        const valEl = document.querySelector(`.device-current[data-id="${device.device_id}"]`);
+        const timeEl = document.querySelector(`.last-update[data-id="${device.device_id}"]`);
+        if (valEl) valEl.textContent = (device.ct_mA / 1000).toFixed(2) + ' A';
+        if (timeEl) timeEl.textContent = formatUpdatedAt(device.updated_at);
 
+        const card = valEl?.closest('.device-card');
+        if (card) {
+          const status = getDeviceStatus(device);
+          const statusDisplay = getStatusDisplay(status);
+          const dot = card.querySelector('.rounded-full');
+          const text = card.querySelector('.text-xs.font-medium');
+          if (dot) dot.className = `w-2 h-2 rounded-full ${statusDisplay.bg}`;
+          if (text) { text.className = `text-xs font-medium text-${statusDisplay.color}`; text.textContent = statusDisplay.text; }
+        }
+      }
+      updateStatistics(filtered);
+    }
+
+    function updateStatistics(filteredDevices) {
+      const currents = filteredDevices.map(d => d.ct_mA / 1000);
       if (currents.length === 0) {
-        document.getElementById('stat-total').textContent = '0';
-        document.getElementById('stat-avg').textContent = '--';
-        document.getElementById('stat-max').textContent = '--';
-        document.getElementById('stat-min').textContent = '--';
+        ['stat-total','stat-avg','stat-max','stat-min'].forEach(id => {
+          document.getElementById(id).textContent = id === 'stat-total' ? '0' : '--';
+        });
         return;
       }
-
       const avg = currents.reduce((a, b) => a + b, 0) / currents.length;
-      const max = Math.max(...currents);
-      const min = Math.min(...currents);
-
       document.getElementById('stat-total').textContent = filteredDevices.length;
-      document.getElementById('stat-avg').textContent = avg.toFixed(1) + ' A';
-      document.getElementById('stat-max').textContent = max.toFixed(1) + ' A';
-      document.getElementById('stat-min').textContent = min.toFixed(1) + ' A';
+      document.getElementById('stat-avg').textContent = avg.toFixed(2) + ' A';
+      document.getElementById('stat-max').textContent = Math.max(...currents).toFixed(2) + ' A';
+      document.getElementById('stat-min').textContent = Math.min(...currents).toFixed(2) + ' A';
     }
 
     // ============ NAVIGATION ============
-    function navigateToDevice(lineId, deviceId) {
-      sessionStorage.setItem('selectedLine', lineId);
+    function navigateToDevice(pageId, deviceId) {
+      sessionStorage.setItem('selectedLine', pageId);
       sessionStorage.setItem('selectedDevice', deviceId);
       window.location.href = 'current_monitor_single.html';
     }
 
-    // ============ REAL-TIME UPDATES ============
-    function updateCurrents() {
-      devices.forEach(device => {
-        const variation = (Math.random() - 0.5) * 3;
-        device.currentValue = device.baseCurrent + variation;
-      });
-
-      devices.forEach(device => {
-        const currentEl = document.querySelector(`.device-current[data-id="${device.id}"]`);
-        if (currentEl) {
-          currentEl.textContent = device.currentValue.toFixed(1) + ' A';
-
-          const card = currentEl.closest('.device-card');
-          if (card) {
-            const status = getDeviceStatus(device);
-            const statusDisplay = getStatusDisplay(status);
-            const statusDot = card.querySelector('.rounded-full');
-            const statusText = card.querySelector('.text-xs.font-medium');
-
-            if (statusDot) {
-              statusDot.className = `w-2 h-2 rounded-full ${statusDisplay.bg}`;
-            }
-            if (statusText) {
-              statusText.className = `text-xs font-medium text-${statusDisplay.color}`;
-              statusText.textContent = statusDisplay.text;
-            }
-          }
-        }
-      });
-
-      const filtered = getFilteredDevices();
-      updateStatistics(filtered);
-    }
-
-    function startRealtimeUpdates() {
-      if (updateInterval) clearInterval(updateInterval);
-      updateInterval = setInterval(updateCurrents, 3000);
-    }
-
     // ============ REFRESH BUTTON ============
-    document.getElementById('refresh-btn').addEventListener('click', () => {
-      updateCurrents();
-      renderDevices();
-
+    document.getElementById('refresh-btn').addEventListener('click', async () => {
+      await pollRealtime();
       const icon = document.querySelector('#refresh-btn .material-symbols-sharp');
       icon.style.transition = 'transform 0.5s';
       icon.style.transform = 'rotate(360deg)';
-      setTimeout(() => {
-        icon.style.transition = '';
-        icon.style.transform = '';
-      }, 500);
+      setTimeout(() => { icon.style.transition = ''; icon.style.transform = ''; }, 500);
     });
 
     // ============ INIT ============
-    function init() {
-      initProcessTabs();
-      initLineTabs();
-
-      devices.forEach(device => {
-        device.currentValue = device.baseCurrent + (Math.random() - 0.5) * 4;
-      });
-
-      renderDevices();
-      startRealtimeUpdates();
+    async function init() {
+      try {
+        await loadDashboard();
+        initLineTabs();
+        renderDevices();
+        updateInterval = setInterval(pollRealtime, REALTIME_POLL_MS);
+      } catch (e) {
+        console.error('Init failed:', e);
+        document.getElementById('device-grid').innerHTML =
+          `<div class="col-span-3 py-16 text-center text-muted-foreground">載入失敗：${e.message}</div>`;
+      }
     }
 
     init();

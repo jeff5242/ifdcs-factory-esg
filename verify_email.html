@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>電子郵件驗證 - IFDCS</title>
     <script src="https://cdn.tailwindcss.com"></script>
+  <script src="theme.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -22,15 +23,21 @@
                         'secondary': ['Geist', 'sans-serif'],
                     },
                     colors: {
-                        'background': '#F2F3F0',
-                        'foreground': '#111111',
-                        'card': '#FFFFFF',
-                        'border': '#CBCCC9',
-                        'primary': '#FF8400',
-                        'success': '#DFE6E1',
-                        'success-foreground': '#004D1A',
-                        'error': '#E5DCDA',
-                        'error-foreground': '#8C1C00',
+                        'background': 'var(--color-background)',
+                        'foreground': 'var(--color-foreground)',
+                        'card': 'var(--color-card)',
+                        'card-foreground': 'var(--color-card-foreground)',
+                        'border': 'var(--color-border)',
+                        'muted': 'var(--color-muted)',
+                        'muted-foreground': 'var(--color-muted-foreground)',
+                        'primary': 'var(--color-primary)',
+                        'primary-foreground': 'var(--color-primary-foreground)',
+                        'secondary': 'var(--color-secondary)',
+                        'secondary-foreground': 'var(--color-secondary-foreground)',
+                        'error': 'var(--color-error)',
+                        'error-foreground': 'var(--color-error-foreground)',
+                        'success': 'var(--color-success)',
+                        'success-foreground': 'var(--color-success-foreground)',
                     }
                 }
             }

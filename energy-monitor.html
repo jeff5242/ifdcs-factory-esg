@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>電力監控 - IFDCS</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="theme.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -18,26 +19,29 @@
             'secondary': ['Geist', 'sans-serif'],
           },
           colors: {
-            'background': '#F2F3F0',
-            'foreground': '#111111',
-            'card': '#FFFFFF',
-            'card-foreground': '#111111',
-            'border': '#CBCCC9',
-            'muted': '#F2F3F0',
-            'muted-foreground': '#666666',
-            'primary': '#FF8400',
-            'primary-foreground': '#111111',
-            'secondary': '#E7E8E5',
-            'secondary-foreground': '#111111',
-            'sidebar': '#E7E8E5',
-            'sidebar-accent': '#CBCCC9',
-            'sidebar-foreground': '#666666',
-            'sidebar-primary': '#18181b',
-            'error': '#E5DCDA',
-            'error-foreground': '#8C1C00',
-            'warning': '#E9E3D8',
-            'warning-foreground': '#804200',
-            'success-foreground': '#004D1A',
+            'background': 'var(--color-background)',
+            'foreground': 'var(--color-foreground)',
+            'card': 'var(--color-card)',
+            'card-foreground': 'var(--color-card-foreground)',
+            'border': 'var(--color-border)',
+            'muted': 'var(--color-muted)',
+            'muted-foreground': 'var(--color-muted-foreground)',
+            'primary': 'var(--color-primary)',
+            'primary-foreground': 'var(--color-primary-foreground)',
+            'secondary': 'var(--color-secondary)',
+            'secondary-foreground': 'var(--color-secondary-foreground)',
+            'sidebar': 'var(--color-sidebar)',
+            'sidebar-accent': 'var(--color-sidebar-accent)',
+            'sidebar-foreground': 'var(--color-sidebar-foreground)',
+            'sidebar-primary': 'var(--color-sidebar-primary)',
+            'error': 'var(--color-error)',
+            'error-foreground': 'var(--color-error-foreground)',
+            'warning': 'var(--color-warning)',
+            'warning-foreground': 'var(--color-warning-foreground)',
+            'success': 'var(--color-success)',
+            'success-foreground': 'var(--color-success-foreground)',
+            'info': 'var(--color-info)',
+            'info-foreground': 'var(--color-info-foreground)',
           }
         }
       }

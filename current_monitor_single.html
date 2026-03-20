@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>單一裝置電流監控 - IFDCS</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="theme.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,31 +20,29 @@
             'secondary': ['Geist', 'sans-serif'],
           },
           colors: {
-            'background': '#F2F3F0',
-            'foreground': '#111111',
-            'card': '#FFFFFF',
-            'card-foreground': '#111111',
-            'border': '#CBCCC9',
-            'muted': '#F2F3F0',
-            'muted-foreground': '#666666',
-            'primary': '#FF8400',
-            'primary-foreground': '#111111',
-            'secondary': '#E7E8E5',
-            'secondary-foreground': '#111111',
-            'sidebar': '#E7E8E5',
-            'sidebar-accent': '#CBCCC9',
-            'sidebar-foreground': '#666666',
-            'sidebar-primary': '#18181b',
-            'error': '#E5DCDA',
-            'error-foreground': '#8C1C00',
-            'warning': '#E9E3D8',
-            'warning-foreground': '#804200',
-            'success': '#DFE6E1',
-            'success-foreground': '#004D1A',
-            'info': '#DFDFE6',
-            'info-foreground': '#000066',
-            'danger': '#EF4444',
-            'safe': '#22C55E',
+            'background': 'var(--color-background)',
+            'foreground': 'var(--color-foreground)',
+            'card': 'var(--color-card)',
+            'card-foreground': 'var(--color-card-foreground)',
+            'border': 'var(--color-border)',
+            'muted': 'var(--color-muted)',
+            'muted-foreground': 'var(--color-muted-foreground)',
+            'primary': 'var(--color-primary)',
+            'primary-foreground': 'var(--color-primary-foreground)',
+            'secondary': 'var(--color-secondary)',
+            'secondary-foreground': 'var(--color-secondary-foreground)',
+            'sidebar': 'var(--color-sidebar)',
+            'sidebar-accent': 'var(--color-sidebar-accent)',
+            'sidebar-foreground': 'var(--color-sidebar-foreground)',
+            'sidebar-primary': 'var(--color-sidebar-primary)',
+            'error': 'var(--color-error)',
+            'error-foreground': 'var(--color-error-foreground)',
+            'warning': 'var(--color-warning)',
+            'warning-foreground': 'var(--color-warning-foreground)',
+            'success': 'var(--color-success)',
+            'success-foreground': 'var(--color-success-foreground)',
+            'info': 'var(--color-info)',
+            'info-foreground': 'var(--color-info-foreground)',
           }
         }
       }
@@ -187,10 +186,7 @@
                 <span class="material-symbols-sharp icon-20 text-muted-foreground">keyboard_arrow_down</span>
               </button>
               <div class="dropdown-menu" id="line-menu">
-                <div class="dropdown-item" data-value="all" onclick="selectLine(this)">全部產線</div>
-                <div class="dropdown-item selected" data-value="line1" onclick="selectLine(this)">產線 1</div>
-                <div class="dropdown-item" data-value="line2" onclick="selectLine(this)">產線 2</div>
-                <div class="dropdown-item" data-value="line3" onclick="selectLine(this)">產線 3</div>
+                <!-- 動態生成 -->
               </div>
             </div>
           </div>
@@ -371,119 +367,193 @@
   </div>
 
   <script>
-    // ============ DATA ============
-    const productionLines = {
-      line1: {
-        name: '產線 1',
-        devices: [
-          { id: 'A1', name: 'CNC 加工機 #01', baseCurrent: 28.5, range: [10, 45] },
-          { id: 'A2', name: 'CNC 加工機 #02', baseCurrent: 25.2, range: [10, 45] },
-          { id: 'A3', name: '沖壓機 #01', baseCurrent: 32.0, range: [15, 50] },
-        ]
-      },
-      line2: {
-        name: '產線 2',
-        devices: [
-          { id: 'B1', name: '射出成型機 #01', baseCurrent: 35.0, range: [15, 55] },
-          { id: 'B2', name: '射出成型機 #02', baseCurrent: 33.5, range: [15, 55] },
-        ]
-      },
-      line3: {
-        name: '產線 3',
-        devices: [
-          { id: 'C1', name: '空壓機 #01', baseCurrent: 20.0, range: [8, 35] },
-          { id: 'C2', name: '空壓機 #02', baseCurrent: 22.5, range: [8, 35] },
-          { id: 'C3', name: '冷卻塔 #01', baseCurrent: 18.0, range: [5, 30] },
-          { id: 'C4', name: '冷卻塔 #02', baseCurrent: 19.5, range: [5, 30] },
-        ]
-      }
-    };
+    // ============ CONFIG ============
+    const USER_ID = 1;
+    const REALTIME_POLL_MS = 3000;
+    const OFFLINE_THRESHOLD_MS = 30000;
 
     // ============ STATE ============
-    let currentLine = 'line1';
-    let currentDevice = productionLines.line1.devices[0];
-    let currentResolution = 10; // seconds
+    let pageMap = {};        // { page_id: { name, devices:[{device_id, name}] } }
+    let currentPageId = null;
+    let currentDevice = null; // { device_id, name }
+    let currentResolution = 10;
     let startTime = new Date(); startTime.setHours(9, 0, 0, 0);
     let endTime = new Date(); endTime.setHours(9, 15, 0, 0);
     let chart = null;
     let updateInterval = null;
     let currentThreshold = 30;
 
-    // ============ DROPDOWN FUNCTIONS ============
+    // ============ API ============
+    async function loadDashboard() {
+      const res = await fetch(`/api/dashboard/${USER_ID}?realtime=false`);
+      const data = await res.json();
+      if (data.status !== 'success') throw new Error(data.message);
+
+      pageMap = {};
+      function flattenPages(nodes) {
+        for (const p of nodes) {
+          if (p.devices && p.devices.length > 0) {
+            pageMap[p.page_id] = {
+              name: p.name,
+              devices: p.devices.map(d => ({ device_id: d.device_id, name: d.name }))
+            };
+          }
+          if (p.children && p.children.length > 0) flattenPages(p.children);
+        }
+      }
+      flattenPages(data.pages);
+    }
+
+    async function fetchRealtime() {
+      if (!currentDevice) return;
+      try {
+        const res = await fetch(`/api/device/${currentDevice.device_id}/realtime`);
+        const data = await res.json();
+        if (data.status !== 'success') return;
+
+        const currentA = (data.ct_value / 1000).toFixed(2);
+        document.getElementById('current-value').textContent = currentA + ' A';
+
+        const ageMs = data.updated_at ? Date.now() - new Date(data.updated_at).getTime() : Infinity;
+        document.getElementById('last-update').textContent =
+          ageMs < 5000 ? '剛剛' :
+          ageMs < 60000 ? `${Math.floor(ageMs / 1000)} 秒前` :
+          ageMs < 3600000 ? `${Math.floor(ageMs / 60000)} 分鐘前` : '超過 1 小時前';
+
+        const isOffline = !data.updated_at || ageMs > OFFLINE_THRESHOLD_MS;
+        const statusEl = document.getElementById('status-indicator');
+        statusEl.innerHTML = isOffline
+          ? `<div class="w-2 h-2 rounded-full bg-muted-foreground"></div><span class="text-xs font-medium text-muted-foreground">離線</span>`
+          : `<div class="w-2 h-2 rounded-full bg-success-foreground"></div><span class="text-xs font-medium text-success-foreground">正常</span>`;
+
+        // 加入圖表新資料點
+        if (chart && chart.data.labels.length > 0) {
+          const now = new Date();
+          chart.data.labels.push(now.toTimeString().slice(0, 8));
+          chart.data.labels.shift();
+          chart.data.datasets[0].data.push(data.ct_value / 1000);
+          chart.data.datasets[0].data.shift();
+          chart.data.datasets[1].data.push(currentThreshold);
+          chart.data.datasets[1].data.shift();
+          chart.update('none');
+          calculateActivations();
+        }
+      } catch (e) { /* ignore poll errors */ }
+    }
+
+    async function fetchHistory() {
+      if (!currentDevice) return { labels: [], data: [] };
+      // 從 startTime 到現在所需的秒數，讓 API 回傳足夠的資料
+      const secondsNeeded = Math.ceil((Date.now() - startTime.getTime()) / 1000);
+      try {
+        const res = await fetch(`/api/device/${currentDevice.device_id}/history_window?seconds=${secondsNeeded}`);
+        const data = await res.json();
+        if (data.status !== 'success') return { labels: [], data: [] };
+
+        // 過濾到選取的時間範圍
+        const points = (data.points || []).filter(p => {
+          const t = new Date(p.recorded_at).getTime();
+          return t >= startTime.getTime() && t <= endTime.getTime();
+        });
+
+        return {
+          labels: points.map(p => new Date(p.recorded_at).toTimeString().slice(0, 8)),
+          data: points.map(p => p.ct_value / 1000)
+        };
+      } catch (e) {
+        return { labels: [], data: [] };
+      }
+    }
+
+    async function fetchHistoryStats() {
+      if (!currentDevice) return;
+      // 過去 24 小時統計
+      try {
+        const res = await fetch(`/api/device/${currentDevice.device_id}/history_window?seconds=86400`);
+        const data = await res.json();
+        if (data.status !== 'success') return;
+        const values = (data.points || []).map(p => p.ct_value / 1000);
+        if (values.length === 0) return;
+        const avg = values.reduce((a, b) => a + b, 0) / values.length;
+        document.getElementById('avg-current').textContent = avg.toFixed(2) + ' A';
+        document.getElementById('max-current').textContent = Math.max(...values).toFixed(2) + ' A';
+        document.getElementById('min-current').textContent = Math.min(...values).toFixed(2) + ' A';
+      } catch (e) { /* ignore */ }
+    }
+
+    // ============ DROPDOWN ============
     function toggleDropdown(id) {
       const menu = document.getElementById(id).querySelector('.dropdown-menu');
-      document.querySelectorAll('.dropdown-menu').forEach(m => {
-        if (m !== menu) m.classList.remove('open');
-      });
+      document.querySelectorAll('.dropdown-menu').forEach(m => { if (m !== menu) m.classList.remove('open'); });
       menu.classList.toggle('open');
+    }
+
+    function populateLineDropdown() {
+      const menu = document.getElementById('line-menu');
+      let html = `<div class="dropdown-item" data-value="all" onclick="selectLine(this)">全部產線</div>`;
+      for (const [pageId, page] of Object.entries(pageMap)) {
+        const sel = Number(pageId) === currentPageId ? ' selected' : '';
+        html += `<div class="dropdown-item${sel}" data-value="${pageId}" onclick="selectLine(this)">${page.name}</div>`;
+      }
+      menu.innerHTML = html;
     }
 
     function selectLine(el) {
       const value = el.dataset.value;
-
-      // If "all" is selected, navigate to Current Monitor page
-      if (value === 'all') {
-        window.location.href = 'current_monitor.html';
-        return;
-      }
-
-      currentLine = value;
-      document.getElementById('line-selected').textContent = productionLines[value].name;
-
-      // Update selected state
-      document.querySelectorAll('#line-menu .dropdown-item').forEach(item => item.classList.remove('selected'));
-      el.classList.add('selected');
-
-      // Update devices dropdown
-      populateDevices();
-
-      // Select first device
-      const firstDevice = productionLines[value].devices[0];
-      selectDevice(firstDevice.id);
-
       toggleDropdown('line-dropdown');
+      if (value === 'all') { window.location.href = 'current_monitor.html'; return; }
+
+      currentPageId = Number(value);
+      document.getElementById('line-selected').textContent = pageMap[currentPageId].name;
+      document.querySelectorAll('#line-menu .dropdown-item').forEach(item =>
+        item.classList.toggle('selected', item.dataset.value === value)
+      );
+
+      populateDevices();
+      const firstDevice = pageMap[currentPageId].devices[0];
+      if (firstDevice) selectDevice(firstDevice.device_id);
     }
 
     function populateDevices() {
       const menu = document.getElementById('device-menu');
-      const devices = productionLines[currentLine].devices;
-
-      // Add "全部裝置" option at the top
+      const devices = pageMap[currentPageId]?.devices || [];
       let html = `<div class="dropdown-item" data-value="all" onclick="selectDeviceFromDropdown(this)">全部裝置</div>`;
       html += devices.map((d, i) =>
-        `<div class="dropdown-item ${i === 0 ? 'selected' : ''}" data-value="${d.id}" onclick="selectDeviceFromDropdown(this)">${d.name}</div>`
+        `<div class="dropdown-item ${i === 0 ? 'selected' : ''}" data-value="${d.device_id}" onclick="selectDeviceFromDropdown(this)">${d.name}</div>`
       ).join('');
       menu.innerHTML = html;
     }
 
     function selectDeviceFromDropdown(el) {
-      const deviceId = el.dataset.value;
-
-      // If "all" is selected, navigate to Current Monitor page
-      if (deviceId === 'all') {
-        window.location.href = 'current_monitor.html';
-        return;
-      }
-
-      selectDevice(deviceId);
+      const val = el.dataset.value;
       toggleDropdown('device-dropdown');
+      if (val === 'all') { window.location.href = 'current_monitor.html'; return; }
+      selectDevice(Number(val));
     }
 
-    function selectDevice(deviceId) {
-      const devices = productionLines[currentLine].devices;
-      currentDevice = devices.find(d => d.id === deviceId) || devices[0];
+    async function selectDevice(deviceId) {
+      const devices = pageMap[currentPageId]?.devices || [];
+      currentDevice = devices.find(d => d.device_id === deviceId) || devices[0];
+      if (!currentDevice) return;
 
       document.getElementById('device-selected').textContent = currentDevice.name;
-      document.querySelectorAll('#device-menu .dropdown-item').forEach(item => {
-        item.classList.toggle('selected', item.dataset.value === deviceId);
-      });
+      document.querySelectorAll('#device-menu .dropdown-item').forEach(item =>
+        item.classList.toggle('selected', Number(item.dataset.value) === currentDevice.device_id)
+      );
 
-      // 切換裝置時重設臨界值為基礎電流 + 1.5A
-      currentThreshold = parseFloat((currentDevice.baseCurrent + 1.5).toFixed(1));
+      document.getElementById('device-title').textContent = `${currentDevice.name} - 當前電流`;
+      document.getElementById('breadcrumb-device').textContent = currentDevice.name;
+      document.getElementById('normal-range').textContent = '--';
+
+      // 重設臨界值
+      currentThreshold = 30;
       document.getElementById('threshold-input').value = currentThreshold;
 
-      updateDeviceDisplay();
-      regenerateChart();
+      if (updateInterval) clearInterval(updateInterval);
+      await fetchRealtime();
+      await fetchHistoryStats();
+      await regenerateChart();
+      updateInterval = setInterval(fetchRealtime, REALTIME_POLL_MS);
     }
 
     // Close dropdowns when clicking outside
@@ -493,55 +563,17 @@
       }
     });
 
-    // ============ DEVICE DISPLAY ============
-    function updateDeviceDisplay() {
-      const current = currentDevice.baseCurrent + (Math.random() - 0.5) * 4;
-      const [minRange, maxRange] = currentDevice.range;
-      const isNormal = current >= minRange && current <= maxRange;
-      const isWarning = current > maxRange && current <= maxRange + 10;
-
-      document.getElementById('device-title').textContent = `${currentDevice.name} - 當前電流`;
-      document.getElementById('breadcrumb-device').textContent = currentDevice.name;
-      document.getElementById('current-value').textContent = current.toFixed(1) + ' A';
-      document.getElementById('normal-range').textContent = `${minRange}-${maxRange} A`;
-
-      const statusEl = document.getElementById('status-indicator');
-      if (isNormal) {
-        statusEl.innerHTML = `<div class="w-2 h-2 rounded-full bg-success-foreground"></div><span class="text-xs font-medium text-success-foreground">正常</span>`;
-      } else if (isWarning) {
-        statusEl.innerHTML = `<div class="w-2 h-2 rounded-full bg-warning-foreground"></div><span class="text-xs font-medium text-warning-foreground">警告</span>`;
-      } else {
-        statusEl.innerHTML = `<div class="w-2 h-2 rounded-full bg-error-foreground"></div><span class="text-xs font-medium text-error-foreground">異常</span>`;
-      }
-
-      // Update statistics
-      const avgCurrent = currentDevice.baseCurrent + (Math.random() - 0.5) * 2;
-      const maxCurrent = currentDevice.baseCurrent + 5 + Math.random() * 5;
-      const minCurrent = currentDevice.baseCurrent - 5 - Math.random() * 5;
-
-      document.getElementById('avg-current').textContent = avgCurrent.toFixed(1) + ' A';
-      document.getElementById('max-current').textContent = maxCurrent.toFixed(1) + ' A';
-      document.getElementById('min-current').textContent = Math.max(0, minCurrent).toFixed(1) + ' A';
-    }
-
     // ============ ACTIVATION ANALYSIS ============
     function calculateActivations() {
-      if (!chart) return 0;
+      if (!chart) return;
       const data = chart.data.datasets[0].data;
       let count = 0;
-      let aboveThreshold = data.length > 0 && data[0] >= currentThreshold;
-
+      let above = data.length > 0 && data[0] >= currentThreshold;
       for (let i = 1; i < data.length; i++) {
-        if (data[i] >= currentThreshold && !aboveThreshold) {
-          aboveThreshold = true;
-        } else if (data[i] < currentThreshold && aboveThreshold) {
-          aboveThreshold = false;
-          count++;
-        }
+        if (data[i] >= currentThreshold && !above) { above = true; }
+        else if (data[i] < currentThreshold && above) { above = false; count++; }
       }
-
       document.getElementById('activation-count').textContent = count + ' 次';
-      return count;
     }
 
     function updateThresholdFromInput() {
@@ -549,7 +581,7 @@
       if (!isNaN(val) && val > 0) {
         currentThreshold = val;
         if (chart) {
-          chart.data.datasets[3].data = Array(chart.data.labels.length).fill(currentThreshold);
+          chart.data.datasets[1].data = Array(chart.data.labels.length).fill(currentThreshold);
           chart.update();
         }
         calculateActivations();
@@ -568,15 +600,10 @@
         });
         btn.classList.add('bg-primary', 'text-black', 'font-semibold');
         btn.classList.remove('text-foreground', 'font-medium');
-
         const res = btn.dataset.res;
-        if (res === 'auto') {
-          const duration = (endTime - startTime) / 1000;
-          currentResolution = Math.max(1, Math.floor(duration / 100));
-        } else {
-          currentResolution = parseInt(res);
-        }
-
+        currentResolution = res === 'auto'
+          ? Math.max(1, Math.floor((endTime - startTime) / 1000 / 100))
+          : parseInt(res);
         updateChartSubtitle();
         regenerateChart();
       });
@@ -600,33 +627,19 @@
     }
 
     function applyTimeRange() {
-      const startInput = document.getElementById('start-time-input').value;
-      const endInput = document.getElementById('end-time-input').value;
-
-      const [sh, sm] = startInput.split(':').map(Number);
-      const [eh, em] = endInput.split(':').map(Number);
-
+      const [sh, sm] = document.getElementById('start-time-input').value.split(':').map(Number);
+      const [eh, em] = document.getElementById('end-time-input').value.split(':').map(Number);
       startTime = new Date(); startTime.setHours(sh, sm, 0, 0);
       endTime = new Date(); endTime.setHours(eh, em, 0, 0);
-
-      if (endTime <= startTime) {
-        alert('結束時間必須大於開始時間');
-        return;
-      }
-
+      if (endTime <= startTime) { alert('結束時間必須大於開始時間'); return; }
       updateTimeDisplays();
       updateRangeSlider();
       regenerateChart();
       closeTimeRangePicker();
     }
 
-    function formatTimeForInput(date) {
-      return date.toTimeString().slice(0, 5);
-    }
-
-    function formatTimeDisplay(date) {
-      return date.toTimeString().slice(0, 8);
-    }
+    function formatTimeForInput(date) { return date.toTimeString().slice(0, 5); }
+    function formatTimeDisplay(date) { return date.toTimeString().slice(0, 8); }
 
     function updateTimeDisplays() {
       document.getElementById('start-time-display').textContent = formatTimeDisplay(startTime);
@@ -637,26 +650,16 @@
 
     // ============ RANGE SLIDER ============
     function updateRangeSlider() {
-      const slider = document.getElementById('range-slider');
       const selection = document.getElementById('range-selection');
-
       const dayStart = new Date(); dayStart.setHours(0, 0, 0, 0);
-      const dayEnd = new Date(); dayEnd.setHours(24, 0, 0, 0);
-      const totalMs = dayEnd - dayStart;
-
-      const startPercent = ((startTime - dayStart) / totalMs) * 100;
-      const endPercent = ((endTime - dayStart) / totalMs) * 100;
-
-      selection.style.left = startPercent + '%';
-      selection.style.width = (endPercent - startPercent) + '%';
+      const totalMs = 24 * 60 * 60 * 1000;
+      const startPct = ((startTime - dayStart) / totalMs) * 100;
+      const endPct = ((endTime - dayStart) / totalMs) * 100;
+      selection.style.left = startPct + '%';
+      selection.style.width = (endPct - startPct) + '%';
     }
 
-    // Draggable range slider
-    let isDragging = false;
-    let dragType = null;
-    let dragStartX = 0;
-    let initialLeft = 0;
-    let initialWidth = 0;
+    let isDragging = false, dragType = null, dragStartX = 0, initialLeft = 0, initialWidth = 0;
 
     document.getElementById('handle-left').addEventListener('mousedown', (e) => startDrag(e, 'left'));
     document.getElementById('handle-right').addEventListener('mousedown', (e) => startDrag(e, 'right'));
@@ -666,86 +669,57 @@
     });
 
     function startDrag(e, type) {
-      isDragging = true;
-      dragType = type;
-      dragStartX = e.clientX;
-      const selection = document.getElementById('range-selection');
-      initialLeft = parseFloat(selection.style.left);
-      initialWidth = parseFloat(selection.style.width);
+      isDragging = true; dragType = type; dragStartX = e.clientX;
+      const sel = document.getElementById('range-selection');
+      initialLeft = parseFloat(sel.style.left);
+      initialWidth = parseFloat(sel.style.width);
       e.preventDefault();
     }
 
     document.addEventListener('mousemove', (e) => {
       if (!isDragging) return;
-
-      const slider = document.getElementById('range-slider');
-      const selection = document.getElementById('range-selection');
-      const sliderWidth = slider.offsetWidth;
-      const deltaPercent = ((e.clientX - dragStartX) / sliderWidth) * 100;
-
+      const sel = document.getElementById('range-selection');
+      const sliderWidth = document.getElementById('range-slider').offsetWidth;
+      const delta = ((e.clientX - dragStartX) / sliderWidth) * 100;
       if (dragType === 'left') {
-        let newLeft = Math.max(0, Math.min(initialLeft + deltaPercent, initialLeft + initialWidth - 1));
-        let newWidth = initialWidth - (newLeft - initialLeft);
-        selection.style.left = newLeft + '%';
-        selection.style.width = newWidth + '%';
+        const newLeft = Math.max(0, Math.min(initialLeft + delta, initialLeft + initialWidth - 1));
+        sel.style.left = newLeft + '%';
+        sel.style.width = (initialWidth - (newLeft - initialLeft)) + '%';
       } else if (dragType === 'right') {
-        let newWidth = Math.max(1, Math.min(initialWidth + deltaPercent, 100 - initialLeft));
-        selection.style.width = newWidth + '%';
+        sel.style.width = Math.max(1, Math.min(initialWidth + delta, 100 - initialLeft)) + '%';
       } else if (dragType === 'move') {
-        let newLeft = Math.max(0, Math.min(initialLeft + deltaPercent, 100 - initialWidth));
-        selection.style.left = newLeft + '%';
+        sel.style.left = Math.max(0, Math.min(initialLeft + delta, 100 - initialWidth)) + '%';
       }
     });
 
     document.addEventListener('mouseup', () => {
       if (!isDragging) return;
       isDragging = false;
-
-      const selection = document.getElementById('range-selection');
-      const left = parseFloat(selection.style.left);
-      const width = parseFloat(selection.style.width);
-
-      // Convert back to time
+      const sel = document.getElementById('range-selection');
+      const left = parseFloat(sel.style.left);
+      const width = parseFloat(sel.style.width);
       const dayStart = new Date(); dayStart.setHours(0, 0, 0, 0);
       const totalMs = 24 * 60 * 60 * 1000;
-
       startTime = new Date(dayStart.getTime() + (left / 100) * totalMs);
       endTime = new Date(dayStart.getTime() + ((left + width) / 100) * totalMs);
-
       updateTimeDisplays();
       regenerateChart();
     });
 
     // ============ CHART ============
-    function generateCurrentData() {
-      const data = [];
-      const labels = [];
-      const duration = (endTime - startTime) / 1000;
-      const points = Math.min(200, Math.floor(duration / currentResolution));
-
-      for (let i = 0; i <= points; i++) {
-        const time = new Date(startTime.getTime() + i * currentResolution * 1000);
-        labels.push(time.toTimeString().slice(0, 8));
-
-        const variation = Math.sin(i / 10) * 3 + (Math.random() - 0.5) * 2;
-        data.push(currentDevice.baseCurrent + variation);
-      }
-
-      return { data, labels };
-    }
-
-    function regenerateChart() {
-      const { data, labels } = generateCurrentData();
-      const [minRange, maxRange] = currentDevice.range;
+    async function regenerateChart() {
+      const { labels, data } = await fetchHistory();
 
       if (chart) {
         chart.data.labels = labels;
         chart.data.datasets[0].data = data;
-        chart.data.datasets[1].data = Array(labels.length).fill(maxRange + 10);
-        chart.data.datasets[2].data = Array(labels.length).fill((minRange + maxRange) / 2);
-        chart.data.datasets[3].data = Array(labels.length).fill(currentThreshold);
-        chart.options.scales.y.min = Math.max(0, minRange - 5);
-        chart.options.scales.y.max = maxRange + 15;
+        chart.data.datasets[1].data = Array(labels.length).fill(currentThreshold);
+        if (data.length > 0) {
+          const maxVal = Math.max(...data);
+          const minVal = Math.min(...data);
+          chart.options.scales.y.min = Math.max(0, minVal * 0.9);
+          chart.options.scales.y.max = maxVal * 1.1;
+        }
         chart.update();
         calculateActivations();
       }
@@ -757,17 +731,14 @@
       gradient.addColorStop(0, 'rgba(255, 132, 0, 0.2)');
       gradient.addColorStop(1, 'rgba(255, 132, 0, 0)');
 
-      const { data, labels } = generateCurrentData();
-      const [minRange, maxRange] = currentDevice.range;
-
       chart = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: labels,
+          labels: [],
           datasets: [
             {
               label: '實際電流',
-              data: data,
+              data: [],
               borderColor: '#FF8400',
               backgroundColor: gradient,
               borderWidth: 2.5,
@@ -780,26 +751,8 @@
               pointHoverBorderWidth: 2,
             },
             {
-              label: '警戒值',
-              data: Array(labels.length).fill(maxRange + 10),
-              borderColor: '#EF4444',
-              borderWidth: 1,
-              borderDash: [5, 5],
-              pointRadius: 0,
-              fill: false,
-            },
-            {
-              label: '標準值',
-              data: Array(labels.length).fill((minRange + maxRange) / 2),
-              borderColor: '#22C55E',
-              borderWidth: 1,
-              borderDash: [5, 5],
-              pointRadius: 0,
-              fill: false,
-            },
-            {
               label: '臨界值',
-              data: Array(labels.length).fill(currentThreshold),
+              data: [],
               borderColor: '#6366F1',
               borderWidth: 2,
               borderDash: [8, 4],
@@ -827,8 +780,8 @@
               callbacks: {
                 title: (ctx) => ctx[0].label,
                 label: (ctx) => {
-                  const labels = ['實際電流', '警戒值', '標準值', '臨界值'];
-                  return `${labels[ctx.datasetIndex]}: ${ctx.parsed.y.toFixed(1)} A`;
+                  const names = ['實際電流', '臨界值'];
+                  return `${names[ctx.datasetIndex]}: ${ctx.parsed.y.toFixed(2)} A`;
                 }
               }
             }
@@ -839,94 +792,67 @@
               ticks: { color: '#666666', font: { size: 11 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 7 }
             },
             y: {
-              min: Math.max(0, minRange - 5),
-              max: maxRange + 15,
+              min: 0,
               grid: { color: '#CBCCC9', drawBorder: false },
-              ticks: { color: '#666666', font: { size: 11 }, callback: (v) => v + ' A' }
+              ticks: { color: '#666666', font: { size: 11 }, callback: (v) => v.toFixed(1) + ' A' }
             }
           }
         }
       });
     }
 
-    // ============ REAL-TIME UPDATES ============
-    function startRealtimeUpdates() {
-      if (updateInterval) clearInterval(updateInterval);
-      updateInterval = setInterval(() => {
-        const newCurrent = currentDevice.baseCurrent + Math.sin(Date.now() / 5000) * 3 + (Math.random() - 0.5) * 2;
-        document.getElementById('current-value').textContent = newCurrent.toFixed(1) + ' A';
-        document.getElementById('last-update').textContent = '剛剛';
-
-        // Update chart with new point
-        if (chart && chart.data.labels.length > 0) {
-          const now = new Date();
-          chart.data.labels.push(now.toTimeString().slice(0, 8));
-          chart.data.labels.shift();
-          chart.data.datasets[0].data.push(newCurrent);
-          chart.data.datasets[0].data.shift();
-          chart.update('none');
-          calculateActivations();
-        }
-      }, 3000);
-    }
-
-    // ============ REFRESH BUTTON ============
-    document.getElementById('refresh-btn').addEventListener('click', () => {
-      updateDeviceDisplay();
-      regenerateChart();
-    });
-
     // ============ MINI CHART ============
     function drawMiniChart() {
       const svg = document.getElementById('mini-chart-svg');
       let path = 'M0,15';
-      for (let i = 0; i <= 100; i++) {
+      for (let i = 1; i <= 100; i++) {
         const y = 15 + Math.sin(i / 5) * 8 + (Math.random() - 0.5) * 3;
         path += ` L${i * 10},${y}`;
       }
       svg.innerHTML = `<path d="${path}" fill="none" stroke="#E5E7EB" stroke-width="2"/>`;
     }
 
+    // ============ REFRESH BUTTON ============
+    document.getElementById('refresh-btn').addEventListener('click', async () => {
+      await fetchRealtime();
+      await regenerateChart();
+    });
+
     // ============ INIT ============
-    function init() {
-      // Check if there's a pre-selected line and device from Current Monitor page
-      const savedLine = sessionStorage.getItem('selectedLine');
-      const savedDevice = sessionStorage.getItem('selectedDevice');
+    async function init() {
+      try {
+        await loadDashboard();
 
-      if (savedLine && productionLines[savedLine]) {
-        currentLine = savedLine;
-        document.getElementById('line-selected').textContent = productionLines[savedLine].name;
-
-        // Update line dropdown selected state
-        document.querySelectorAll('#line-menu .dropdown-item').forEach(item => {
-          item.classList.toggle('selected', item.dataset.value === savedLine);
-        });
-      }
-
-      populateDevices();
-
-      if (savedDevice) {
-        const devices = productionLines[currentLine].devices;
-        const device = devices.find(d => d.id === savedDevice);
-        if (device) {
-          selectDevice(savedDevice);
-        }
-        // Clear sessionStorage after using it
+        const savedPageId = Number(sessionStorage.getItem('selectedLine'));
+        const savedDeviceId = Number(sessionStorage.getItem('selectedDevice'));
         sessionStorage.removeItem('selectedLine');
         sessionStorage.removeItem('selectedDevice');
+
+        // 決定起始產線
+        const firstPageId = Object.keys(pageMap)[0];
+        currentPageId = (savedPageId && pageMap[savedPageId]) ? savedPageId : Number(firstPageId);
+        if (!currentPageId) throw new Error('沒有可用的產線資料');
+
+        document.getElementById('line-selected').textContent = pageMap[currentPageId].name;
+        populateLineDropdown();
+        populateDevices();
+
+        const devices = pageMap[currentPageId].devices;
+        const targetDeviceId = (savedDeviceId && devices.find(d => d.device_id === savedDeviceId))
+          ? savedDeviceId
+          : devices[0]?.device_id;
+
+        initChart();
+        updateTimeDisplays();
+        updateRangeSlider();
+        drawMiniChart();
+
+        if (targetDeviceId) await selectDevice(targetDeviceId);
+      } catch (e) {
+        console.error('Init failed:', e);
+        document.querySelector('main').innerHTML =
+          `<div class="flex items-center justify-center h-full text-muted-foreground">載入失敗：${e.message}</div>`;
       }
-
-      // 設定初始臨界值
-      currentThreshold = parseFloat((currentDevice.baseCurrent + 1.5).toFixed(1));
-      document.getElementById('threshold-input').value = currentThreshold;
-
-      updateDeviceDisplay();
-      updateTimeDisplays();
-      updateRangeSlider();
-      drawMiniChart();
-      initChart();
-      calculateActivations();
-      startRealtimeUpdates();
     }
 
     init();

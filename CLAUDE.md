@@ -27,9 +27,10 @@ IFDCS (Invasion Free Data Capture System) is a smart factory non-invasive data c
 | 2026-02-10 | ✅ 碳盤查 ESG 頁面完成 | Dark mode FUI、碳排 KPI、Combo Chart、工單碳足跡、淨零儀表 |
 | 2026-02-11 | ✅ 共用資料來源 data.js | 集中管理製程/產線/裝置資料，支援動態下拉選單 |
 | 2026-02-11 | ✅ 動態下拉選單實作 | 溫度/電流/電壓監控頁面改為動態讀取 data.js |
+| 2026-03-06 | ✅ 系統設定頁面完成 | 告警閾值、裝置設定、帳號管理三個 Tab，角色權限控制 |
 
 ### 下一步 (Next Steps)
-- [ ] **系統設定頁面** - 討論並實作系統設定功能（待規劃具體需求）
+- [ ] **系統設定 - 後端 API 串接** - 將 settings.html 的靜態 demo 資料替換為真實 API 呼叫
 
 ## Implemented Frontend Pages
 
@@ -49,6 +50,7 @@ IFDCS (Invasion Free Data Capture System) is a smart factory non-invasive data c
 | `alerts.html` | 異常告警中心 - Alert center with filters, tabs, resolve/view actions | ✅ Interactive |
 | `oee_analysis.html` | 生產力分析 (OEE) - UPH chart, downtime analysis, line picker | ✅ Interactive |
 | `carbon_monitor.html` | 碳盤查 ESG - Dark mode FUI, carbon KPIs, combo chart, Net Zero gauge | ✅ Interactive |
+| `settings.html` | 系統設定 - 告警閾值（製程/產線/偵測類型篩選）、裝置設定（新增/編輯/刪除）、帳號管理（角色權限） | ✅ Interactive |
 
 ### Shared Components
 

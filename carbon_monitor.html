@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>碳盤查 ESG 監控 - IFDCS</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="theme.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,29 +20,29 @@
             'secondary': ['Geist', 'sans-serif'],
           },
           colors: {
-            'background': '#0B1120',
-            'foreground': '#E2E8F0',
-            'card': '#0F172A',
-            'card-foreground': '#E2E8F0',
-            'border': 'rgba(255,255,255,0.08)',
-            'muted': '#1E293B',
-            'muted-foreground': '#94A3B8',
-            'primary': '#00FF88',
-            'primary-foreground': '#0B1120',
-            'secondary': '#1E293B',
-            'secondary-foreground': '#E2E8F0',
-            'sidebar': '#0F172A',
-            'sidebar-accent': '#1E293B',
-            'sidebar-foreground': '#94A3B8',
-            'sidebar-primary': '#E2E8F0',
-            'error': '#2D1618',
-            'error-foreground': '#FF4444',
-            'warning': '#2D2414',
-            'warning-foreground': '#FFAA00',
-            'success': '#0A2E1A',
-            'success-foreground': '#00FF88',
-            'info': '#0F1A2E',
-            'info-foreground': '#00D4FF',
+            'background': 'var(--color-background)',
+            'foreground': 'var(--color-foreground)',
+            'card': 'var(--color-card)',
+            'card-foreground': 'var(--color-card-foreground)',
+            'border': 'var(--color-border)',
+            'muted': 'var(--color-muted)',
+            'muted-foreground': 'var(--color-muted-foreground)',
+            'primary': 'var(--color-primary)',
+            'primary-foreground': 'var(--color-primary-foreground)',
+            'secondary': 'var(--color-secondary)',
+            'secondary-foreground': 'var(--color-secondary-foreground)',
+            'sidebar': 'var(--color-sidebar)',
+            'sidebar-accent': 'var(--color-sidebar-accent)',
+            'sidebar-foreground': 'var(--color-sidebar-foreground)',
+            'sidebar-primary': 'var(--color-sidebar-primary)',
+            'error': 'var(--color-error)',
+            'error-foreground': 'var(--color-error-foreground)',
+            'warning': 'var(--color-warning)',
+            'warning-foreground': 'var(--color-warning-foreground)',
+            'success': 'var(--color-success)',
+            'success-foreground': 'var(--color-success-foreground)',
+            'info': 'var(--color-info)',
+            'info-foreground': 'var(--color-info-foreground)',
           }
         }
       }
@@ -65,27 +66,42 @@
     .icon-20 { font-size: 20px; }
     .icon-14 { font-size: 14px; }
 
-    /* Glassmorphism */
-    .glass {
+    /* Glassmorphism - dark mode only */
+    [data-theme="dark"] .glass {
       background: rgba(15, 23, 42, 0.6);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.06);
     }
-    .glass-light {
+    [data-theme="light"] .glass {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(203, 204, 201, 0.5);
+    }
+    [data-theme="dark"] .glass-light {
       background: rgba(30, 41, 59, 0.5);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.06);
     }
+    [data-theme="light"] .glass-light {
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(203, 204, 201, 0.3);
+    }
 
-    /* Glow effects */
-    .glow-green { box-shadow: 0 0 20px rgba(0, 255, 136, 0.15), inset 0 1px 0 rgba(0, 255, 136, 0.1); }
-    .glow-red { box-shadow: 0 0 20px rgba(255, 68, 68, 0.15), inset 0 1px 0 rgba(255, 68, 68, 0.1); }
-    .glow-blue { box-shadow: 0 0 20px rgba(0, 212, 255, 0.15), inset 0 1px 0 rgba(0, 212, 255, 0.1); }
+    /* Glow effects - dark mode only */
+    [data-theme="dark"] .glow-green { box-shadow: 0 0 20px rgba(0, 255, 136, 0.15), inset 0 1px 0 rgba(0, 255, 136, 0.1); }
+    [data-theme="dark"] .glow-red { box-shadow: 0 0 20px rgba(255, 68, 68, 0.15), inset 0 1px 0 rgba(255, 68, 68, 0.1); }
+    [data-theme="dark"] .glow-blue { box-shadow: 0 0 20px rgba(0, 212, 255, 0.15), inset 0 1px 0 rgba(0, 212, 255, 0.1); }
+    [data-theme="light"] .glow-green { box-shadow: 0 2px 8px rgba(0, 77, 26, 0.1); }
+    [data-theme="light"] .glow-red { box-shadow: 0 2px 8px rgba(140, 28, 0, 0.1); }
+    [data-theme="light"] .glow-blue { box-shadow: 0 2px 8px rgba(0, 0, 102, 0.1); }
 
-    /* Grid lines background */
-    .grid-bg {
+    /* Grid lines background - dark mode only */
+    [data-theme="dark"] .grid-bg {
       background-image:
         linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
@@ -117,10 +133,11 @@
     .carbon-progress {
       height: 6px;
       border-radius: 3px;
-      background: rgba(255,255,255,0.06);
       overflow: hidden;
       position: relative;
     }
+    [data-theme="dark"] .carbon-progress { background: rgba(255,255,255,0.06); }
+    [data-theme="light"] .carbon-progress { background: rgba(0,0,0,0.08); }
     .carbon-progress-fill {
       height: 100%;
       border-radius: 3px;
@@ -130,22 +147,19 @@
       position: absolute;
       top: 0;
       height: 100%;
-      border-right: 2px dashed rgba(255, 255, 255, 0.3);
     }
+    [data-theme="dark"] .carbon-progress-planned { border-right-color: rgba(255, 255, 255, 0.3); }
+    [data-theme="light"] .carbon-progress-planned { border-right-color: rgba(0, 0, 0, 0.2); }
 
     /* Table */
     .wo-row { transition: background-color 0.15s; }
-    .wo-row:hover { background: rgba(255, 255, 255, 0.03); }
 
     /* Dropdown */
     .dropdown { position: relative; }
     .dropdown-menu {
       position: absolute; top: 100%; left: 0; right: 0; z-index: 50;
       margin-top: 4px;
-      background: #1E293B;
-      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 8px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
       display: none;
       max-height: 200px;
       overflow-y: auto;
@@ -153,20 +167,8 @@
     .dropdown-menu.open { display: block; }
     .dropdown-item {
       padding: 10px 16px; cursor: pointer; font-size: 14px;
-      color: #94A3B8;
       transition: background-color 0.15s;
     }
-    .dropdown-item:hover { background: rgba(255,255,255,0.05); color: #E2E8F0; }
-    .dropdown-item.selected { background: rgba(0,255,136,0.1); color: #00FF88; }
-
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
-
-    /* Sidebar border override for dark theme */
-    #sidebar { border-color: rgba(255,255,255,0.06) !important; }
   </style>
 </head>
 <body class="h-full bg-background font-secondary">
